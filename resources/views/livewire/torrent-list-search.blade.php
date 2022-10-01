@@ -29,11 +29,6 @@
                             <input wire:model.debounce.500ms="description" type="text" class="form-control"
                                    placeholder="Description">
                         </div>
-                        <div class="form-group col-sm-3 col-xs-6 adv-search-mediainfo">
-                            <label for="mediainfo" class="label label-default">{{ __('torrent.media-info') }}</label>
-                            <input wire:model.debounce.500ms="mediainfo" type="text" class="form-control"
-                                   placeholder="Mediainfo">
-                        </div>
                         <div class="form-group col-sm-3 col-xs-6 adv-search-keywords">
                             <label for="keywords" class="label label-default">{{ __('torrent.keywords') }}</label>
                             <input wire:model.debounce.500ms="keywords" type="text" class="form-control"
@@ -43,28 +38,6 @@
                             <label for="uploader" class="label label-default">{{ __('torrent.uploader') }}</label>
                             <input wire:model.debounce.500ms="uploader" type="text" class="form-control"
                                    placeholder="Uploader">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-sm-3 col-xs-6 adv-search-tmdb">
-                            <label for="tmdbId" class="label label-default">TMDb</label>
-                            <input wire:model.debounce.500ms="tmdbId" type="text" class="form-control"
-                                   placeholder="TMDb ID">
-                        </div>
-                        <div class="form-group col-sm-3 col-xs-6 adv-search-imdb">
-                            <label for="imdbId" class="label label-default">IMDb</label>
-                            <input wire:model.debounce.500ms="imdbId" type="text" class="form-control"
-                                   placeholder="IMDb ID">
-                        </div>
-                        <div class="form-group col-sm-3 col-xs-6 adv-search-tvdb">
-                            <label for="tvdbId" class="label label-default">TVDb</label>
-                            <input wire:model.debounce.500ms="tvdbId" type="text" class="form-control"
-                                   placeholder="TVDb ID">
-                        </div>
-                        <div class="form-group col-sm-3 col-xs-6 adv-search-mal">
-                            <label for="malId" class="label label-default">MAL</label>
-                            <input wire:model.debounce.500ms="malId" type="text" class="form-control"
-                                   placeholder="MAL ID">
                         </div>
                     </div>
                     <div class="row">
@@ -90,18 +63,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-sm-6 col-xs-12 adv-search-region">
-                            @php $regions = cache()->remember('regions', 3_600, fn () => App\Models\Region::all()->sortBy('position')) @endphp
-                            <label for="region" class="label label-default">Region</label>
-                            <div id="regions" wire:ignore></div>
-                        </div>
-                        <div class="form-group col-sm-6 col-xs-12 adv-search-distributor">
-                            @php $distributors = cache()->remember('distributors', 3_600, fn () => App\Models\Distributor::all()->sortBy('position')) @endphp
-                            <label for="distributor" class="label label-default">Distributor</label>
-                            <div id="distributors" wire:ignore></div>
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="form-group col-sm-12 col-xs-6 adv-search-categories">
                             <label for="categories" class="label label-default">{{ __('common.category') }}</label>
                             @php $categories = cache()->remember('categories', 3_600, fn () => App\Models\Category::all()->sortBy('position')) @endphp
@@ -123,20 +84,6 @@
                                 <span class="badge-user">
 									<label class="inline">
 										<input type="checkbox" wire:model.prefetch="types" value="{{ $type->id }}"> {{ $type->name }}
-									</label>
-								</span>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-sm-12 col-xs-6 adv-search-resolutions">
-                            <label for="resolutions" class="label label-default">{{ __('common.resolution') }}</label>
-                            @php $resolutions = cache()->remember('resolutions', 3_600, fn () => App\Models\Resolution::all()->sortBy('position')) @endphp
-                            @foreach ($resolutions as $resolution)
-                                <span class="badge-user">
-									<label class="inline">
-										<input type="checkbox" wire:model.prefetch="resolutions"
-                                               value="{{ $resolution->id }}"> {{ $resolution->name }}
 									</label>
 								</span>
                             @endforeach
@@ -415,22 +362,6 @@
             <tbody>
             @foreach($torrents as $torrent)
                 @php $meta = null @endphp
-                @if ($torrent->category->tv_meta)
-                    @if ($torrent->tmdb || $torrent->tmdb != 0)
-                        @php $meta = cache()->remember('tvmeta:'.$torrent->tmdb.$torrent->category_id, 3_600, fn () => App\Models\Tv::select(['id', 'poster', 'vote_average'])->where('id', '=', $torrent->tmdb)->first()) @endphp
-                    @endif
-                @endif
-                @if ($torrent->category->movie_meta)
-                    @if ($torrent->tmdb || $torrent->tmdb != 0)
-                        @php $meta = cache()->remember('moviemeta:'.$torrent->tmdb.$torrent->category_id, 3_600, fn () => App\Models\Movie::select(['id', 'poster', 'vote_average'])->where('id', '=', $torrent->tmdb)->first()) @endphp
-                    @endif
-                @endif
-                @if ($torrent->category->game_meta)
-                    @if ($torrent->igdb || $torrent->igdb != 0)
-                        @php $meta = MarcReichel\IGDBLaravel\Models\Game::with(['cover' => ['url', 'image_id']])->find($torrent->igdb) @endphp
-                    @endif
-                @endif
-
                 @if ($torrent->sticky == 1)
                     <tr class="success">
                 @else
@@ -439,17 +370,6 @@
                         <td class="torrent-listings-poster" style="width: 1%;">
                             @if ($user->show_poster == 1)
                                 <div class="torrent-poster pull-left">
-                                    @if ($torrent->category->movie_meta || $torrent->category->tv_meta)
-                                        <img src="{{ isset($meta->poster) ? tmdb_image('poster_small', $meta->poster) : 'https://via.placeholder.com/90x135' }}"
-                                             class="torrent-poster-img-small" loading="lazy" alt="{{ __('torrent.poster') }}">
-                                    @endif
-
-                                    @if ($torrent->category->game_meta)
-                                        <img style="height: 80px;"
-                                             src="{{ isset($meta->cover) ? 'https://images.igdb.com/igdb/image/upload/t_cover_small_2x/'.$meta->cover['image_id'].'.png' : 'https://via.placeholder.com/90x135' }}"
-                                             class="torrent-poster-img-small" loading="lazy" alt="{{ __('torrent.poster') }}">
-                                    @endif
-
                                     @if ($torrent->category->music_meta)
                                         <img src="https://via.placeholder.com/90x135" class="torrent-poster-img-small"
                                              loading="lazy" alt="{{ __('torrent.poster') }}">
@@ -488,13 +408,6 @@
                                     {{ $torrent->type->name }}
                                 </span>
                             </div>
-                            @if ($torrent->category->movie_meta || $torrent->category->tv_meta)
-                                <div class="text-center" style="padding-top: 5px;">
-                                <span class="label label-success" style="font-size: 13px">
-                                    {{ $torrent->resolution->name ?? 'N/A' }}
-                                </span>
-                                </div>
-                            @endif
                         </td>
                         <td class="torrent-listings-overview" style="vertical-align: middle;">
                             @if($user->group->is_modo || $user->id === $torrent->user_id)
@@ -734,34 +647,6 @@
                                 </a>
                             @endif
                         </td>
-                        <td class="torrent-listings-tmdb" style="vertical-align: middle;">
-                            @if ($torrent->category->game_meta)
-                                <span class='badge-extra'>
-                                    <img src="{{ url('img/igdb.png') }}" alt="igdb_id" style="margin-left: -5px;"
-                                         width="24px" height="24px" loading="lazy"> {{ $torrent->igdb }}
-                                    <br>
-                                    <span class="{{ rating_color($meta->rating ?? 'text-white') }}">
-                                        <i class="{{ config('other.font-awesome') }} fa-star-half-alt"></i>
-                                        {{ round($meta->rating ?? 0) }}/100
-                                    </span>
-                                </span>
-                            @endif
-                            @if ($torrent->category->movie_meta || $torrent->category->tv_meta)
-                                <div id="imdb_id" style="display: none;">tt{{ $torrent->imdb }}</div>
-                                <span class='badge-extra'>
-                                    <a href="{{ route('torrents.similar', ['category_id' => $torrent->category_id, 'tmdb' => $torrent->tmdb]) }}">
-                                        <img src="{{ url('img/tmdb_small.png') }}" alt="tmdb_id"
-                                             style="margin-left: -5px;" width="24px" height="24px" loading="lazy">
-                                        {{ $torrent->tmdb }}
-                                    </a>
-                                    <br>
-                                    <span class="{{ rating_color($meta->vote_average ?? 'text-white') }}">
-                                        <i class="{{ config('other.font-awesome') }} fa-star-half-alt"></i>
-                                        {{ $meta->vote_average ?? 0 }}/10
-                                    </span>
-                                </span>
-                            @endif
-                        </td>
                         <td class="torrent-listings-size" style="vertical-align: middle;">
                             <span class='badge-extra'>
                                 {{ $torrent->getSize() }}
@@ -830,51 +715,3 @@
         </div>
     </div>
 </div>
-
-<script nonce="{{ HDVinnie\SecureHeaders\SecureHeaders::nonce('script') }}">
-  document.addEventListener('livewire:load', function () {
-    let myOptions = [
-            @foreach($regions as $region)
-      {
-        label: "{{ $region->name }}", value: "{{ $region->id }}"
-      },
-        @endforeach
-    ]
-    VirtualSelect.init({
-      ele: '#regions',
-      options: myOptions,
-      multiple: true,
-      search: true,
-      placeholder: "{{__('Select Regions')}}",
-      noOptionsText: "{{__('No results found')}}",
-    })
-
-    let regions = document.querySelector('#regions')
-    regions.addEventListener('change', () => {
-      let data = regions.value
-    @this.set('regions', data)
-    })
-
-    let myOptions2 = [
-            @foreach($distributors as $distributor)
-      {
-        label: "{{ $distributor->name }}", value: "{{ $distributor->id }}"
-      },
-        @endforeach
-    ]
-    VirtualSelect.init({
-      ele: '#distributors',
-      options: myOptions2,
-      multiple: true,
-      search: true,
-      placeholder: "{{__('Select Distributor')}}",
-      noOptionsText: "{{__('No results found')}}",
-    })
-
-    let distributors = document.querySelector('#distributors')
-    distributors.addEventListener('change', () => {
-      let data = distributors.value
-    @this.set('distributors', data)
-    })
-  })
-</script>

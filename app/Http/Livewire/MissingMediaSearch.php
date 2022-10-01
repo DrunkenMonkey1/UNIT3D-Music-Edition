@@ -25,7 +25,6 @@ class MissingMediaSearch extends Component
     protected $queryString = [
         'categories'      => ['except' => []],
         'types'           => ['except' => []],
-        'resolutions'     => ['except' => []],
         'sortField'       => ['except' => 'created_at'],
         'sortDirection'   => ['except' => 'desc'],
         'page'            => ['except' => 1],
@@ -39,7 +38,7 @@ class MissingMediaSearch extends Component
 
     final public function getMediasProperty(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Movie::with(['torrents:tmdb,type_id,resolution_id'])
+        return Movie::with(['torrents:type_id'])
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
     }

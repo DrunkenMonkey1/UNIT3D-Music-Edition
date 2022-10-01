@@ -28,16 +28,6 @@ class GraveyardSearch extends Component
 
     public array $types = [];
 
-    public array $resolutions = [];
-
-    public string $tmdbId = '';
-
-    public string $imdbId = '';
-
-    public string $tvdbId = '';
-
-    public string $malId = '';
-
     public array $free = [];
 
     public bool $doubleup = false;
@@ -45,8 +35,6 @@ class GraveyardSearch extends Component
     public bool $featured = false;
 
     public bool $stream = false;
-
-    public bool $sd = false;
 
     public bool $highspeed = false;
 
@@ -64,16 +52,10 @@ class GraveyardSearch extends Component
         'name'          => ['except' => ''],
         'categories'    => ['except' => []],
         'types'         => ['except' => []],
-        'resolutions'   => ['except' => []],
-        'tmdbId'        => ['except' => ''],
-        'imdbId'        => ['except' => ''],
-        'tvdbId'        => ['except' => ''],
-        'malId'         => ['except' => ''],
         'free'          => ['except' => []],
         'doubleup'      => ['except' => false],
         'featured'      => ['except' => false],
         'stream'        => ['except' => false],
-        'sd'            => ['except' => false],
         'highspeed'     => ['except' => false],
         'internal'      => ['except' => false],
         'sortField'     => ['except' => 'created_at'],
@@ -118,16 +100,10 @@ class GraveyardSearch extends Component
             ->when($this->name !== '', fn ($query) => $query->ofName($this->name, $isRegex($this->name)))
             ->when($this->categories !== [], fn ($query) => $query->ofCategory($this->categories))
             ->when($this->types !== [], fn ($query) => $query->ofType($this->types))
-            ->when($this->resolutions !== [], fn ($query) => $query->ofResolution($this->resolutions))
-            ->when($this->tmdbId !== '', fn ($query) => $query->ofTmdb((int) $this->tmdbId))
-            ->when($this->imdbId !== '', fn ($query) => $query->ofImdb((int) (\preg_match('/tt0*(?=(\d{7,}))/', $this->imdbId, $matches) ? $matches[1] : $this->imdbId)))
-            ->when($this->tvdbId !== '', fn ($query) => $query->ofTvdb((int) $this->tvdbId))
-            ->when($this->malId !== '', fn ($query) => $query->ofMal((int) $this->malId))
             ->when($this->free !== [], fn ($query) => $query->ofFreeleech($this->free))
             ->when($this->doubleup !== false, fn ($query) => $query->doubleup())
             ->when($this->featured !== false, fn ($query) => $query->featured())
             ->when($this->stream !== false, fn ($query) => $query->streamOptimized())
-            ->when($this->sd !== false, fn ($query) => $query->sd())
             ->when($this->highspeed !== false, fn ($query) => $query->highspeed())
             ->when($this->internal !== false, fn ($query) => $query->internal())
             ->orderBy($this->sortField, $this->sortDirection)

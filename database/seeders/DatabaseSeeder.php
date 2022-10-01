@@ -37,11 +37,8 @@ class DatabaseSeeder extends Seeder
             ChatStatusSeeder::class,
             BotsTableSeeder::class,
             MediaLanguagesSeeder::class,
-            ResolutionsTableSeeder::class,
             TicketCategoriesTableSeeder::class,
             TicketPrioritiesTableSeeder::class,
-            DistributorsTableSeeder::class,
-            RegionsTableSeeder::class,
         ]);
     }
 }
