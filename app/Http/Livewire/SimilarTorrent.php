@@ -29,7 +29,7 @@ use App\Models\TorrentRequest;
 use App\Models\Tv;
 use App\Models\Warning;
 use Livewire\Component;
-
+// TODO Fix similar torrent
 class SimilarTorrent extends Component
 {
     public $categoryId;
@@ -76,19 +76,8 @@ class SimilarTorrent extends Component
         $category = Category::findOrFail($this->categoryId);
 
         $query = Torrent::query();
-        $query = $query->with(['user:id,username,group_id', 'category', 'type', 'resolution'])
+        $query = $query->with(['user:id,username,group_id', 'category', 'type'])
             ->withCount(['thanks', 'comments']);
-        if ($category->movie_meta) {
-            $query = $query->whereHas('category', function ($q) {
-                $q->where('movie_meta', '=', true);
-            });
-        }
-
-        if ($category->tv_meta) {
-            $query = $query->whereHas('category', function ($q) {
-                $q->where('tv_meta', '=', true);
-            });
-        }
 
         $query = $query->where('tmdb', '=', $this->tmdbId);
         $query = $query->orderBy($this->sortField, $this->sortDirection);

@@ -42,15 +42,6 @@ trait TorrentFilter
         );
     }
 
-    public function scopeOfMediainfo(Builder $query, string $mediainfo, bool $isRegex = false): Builder
-    {
-        return $query->when(
-            $isRegex,
-            fn ($query) => $query->where('mediainfo', 'REGEXP', \substr($mediainfo, 1, -1)),
-            fn ($query) => $query->where('mediainfo', 'LIKE', '%'.$mediainfo.'%')
-        );
-    }
-
     public function scopeOfUploader(Builder $query, string $username): Builder
     {
         return $query
@@ -83,11 +74,6 @@ trait TorrentFilter
         return $query->whereIntegerInRaw('type_id', $types);
     }
 
-    public function scopeOfResolution(Builder $query, array $resolutions): Builder
-    {
-        return $query->whereIntegerInRaw('resolution_id', $resolutions);
-    }
-
     public function scopeOfGenre(Builder $query, array $genres): Builder
     {
         return $query
@@ -106,35 +92,6 @@ trait TorrentFilter
             );
     }
 
-    public function scopeOfRegion(Builder $query, array $regions): Builder
-    {
-        return $query->whereIntegerInRaw('region_id', $regions);
-    }
-
-    public function scopeOfDistributor(Builder $query, array $distributors): Builder
-    {
-        return $query->whereIntegerInRaw('distributor_id', $distributors);
-    }
-
-    public function scopeOfTmdb(Builder $query, int $tvdbId): Builder
-    {
-        return $query->where('tmdb', '=', $tvdbId);
-    }
-
-    public function scopeOfimdb(Builder $query, int $tvdbId): Builder
-    {
-        return $query->where('imdb', '=', $tvdbId);
-    }
-
-    public function scopeOfTvdb(Builder $query, int $tvdbId): Builder
-    {
-        return $query->where('tvdb', '=', $tvdbId);
-    }
-
-    public function scopeOfMal(Builder $query, int $malId): Builder
-    {
-        return $query->where('mal', '=', $malId);
-    }
 
     public function scopeOfPlaylist(Builder $query, int $playlistId): Builder
     {
@@ -277,18 +234,18 @@ trait TorrentFilter
         return $query
             ->whereHas(
                 'files',
-                fn ($query) => $query
-                ->where('name', $filename)
+                fn($query) => $query
+                    ->where('name', $filename)
             );
     }
 
-    public function scopeOfSeason(Builder $query, int $seasonNumber): Builder
-    {
-        return $query->where('season_number', '=', $seasonNumber);
-    }
+//    public function scopeOfSeason(Builder $query, int $seasonNumber): Builder
+//    {
+//        return $query->where('season_number', '=', $seasonNumber);
+//    }
 
-    public function scopeOfEpisode(Builder $query, int $episodeNumber): Builder
-    {
-        return $query->where('episode_number', '=', $episodeNumber);
-    }
+//    public function scopeOfEpisode(Builder $query, int $episodeNumber): Builder
+//    {
+//        return $query->where('episode_number', '=', $episodeNumber);
+//    }
 }

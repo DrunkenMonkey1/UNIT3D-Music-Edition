@@ -33,17 +33,7 @@ class TorrentRequestSearch extends Component
 
     public array $types = [];
 
-    public array $resolutions = [];
-
     public array $genres = [];
-
-    public string $tmdbId = '';
-
-    public string $imdbId = '';
-
-    public string $tvdbId = '';
-
-    public string $malId = '';
 
     public $unfilled;
 
@@ -74,12 +64,7 @@ class TorrentRequestSearch extends Component
         'requestor'     => ['except' => ''],
         'categories'    => ['except' => []],
         'types'         => ['except' => []],
-        'resolutions'   => ['except' => []],
         'genres'        => ['except' => []],
-        'tmdbId'        => ['except' => ''],
-        'imdbId'        => ['except' => ''],
-        'tvdbId'        => ['except' => ''],
-        'malId'         => ['except' => ''],
         'unfilled'      => ['except' => false],
         'claimed'       => ['except' => false],
         'pending'       => ['except' => false],
@@ -128,7 +113,7 @@ class TorrentRequestSearch extends Component
 
     final public function getTorrentRequestsProperty(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return TorrentRequest::with(['category', 'type', 'resolution'])
+        return TorrentRequest::with(['category', 'type',])
             ->withCount(['comments'])
             ->when($this->name, function ($query) {
                 $query->where('name', 'LIKE', '%'.$this->name.'%');
@@ -144,25 +129,6 @@ class TorrentRequestSearch extends Component
             })
             ->when($this->types, function ($query) {
                 $query->whereIntegerInRaw('type_id', $this->types);
-            })
-            ->when($this->resolutions, function ($query) {
-                $query->whereIntegerInRaw('resolution_id', $this->resolutions);
-            })
-            ->when($this->tmdbId, function ($query) {
-                $query->where('tmdb', '=', $this->tmdbId);
-            })
-            ->when($this->imdbId, function ($query) {
-                if (\preg_match('/tt0*?(?=(\d{7,8}))/', $this->imdbId, $matches)) {
-                    $query->where('imdb', '=', $matches[1]);
-                } else {
-                    $query->where('imdb', '=', $this->imdbId);
-                }
-            })
-            ->when($this->tvdbId, function ($query) {
-                $query->where('tvdb', '=', $this->tvdbId);
-            })
-            ->when($this->malId, function ($query) {
-                $query->where('mal', '=', $this->malId);
             })
             ->when($this->unfilled || $this->claimed || $this->pending || $this->filled, function ($query) {
                 $query->where(function ($query) {

@@ -18,7 +18,7 @@ use App\Models\Torrent;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
-
+// TODO Fix the torrent grouping query once we habe have something to group by.
 class TorrentGroupSearch extends Component
 {
     use WithPagination;
@@ -26,8 +26,6 @@ class TorrentGroupSearch extends Component
     public string $name = '';
 
     public string $description = '';
-
-    public string $mediainfo = '';
 
     public string $uploader = '';
 
@@ -41,21 +39,9 @@ class TorrentGroupSearch extends Component
 
     public array $types = [];
 
-    public array $resolutions = [];
 
     public array $genres = [];
 
-    public array $regions = [];
-
-    public array $distributors = [];
-
-    public string $tmdbId = '';
-
-    public string $imdbId = '';
-
-    public string $tvdbId = '';
-
-    public string $malId = '';
 
     public string $playlistId = '';
 
@@ -68,8 +54,6 @@ class TorrentGroupSearch extends Component
     public bool $featured = false;
 
     public bool $stream = false;
-
-    public bool $sd = false;
 
     public bool $highspeed = false;
 
@@ -106,28 +90,19 @@ class TorrentGroupSearch extends Component
     protected $queryString = [
         'name'             => ['except' => ''],
         'description'      => ['except' => ''],
-        'mediainfo'        => ['except' => ''],
         'uploader'         => ['except' => ''],
         'keywords'         => ['except' => ''],
         'startYear'        => ['except' => ''],
         'endYear'          => ['except' => ''],
         'categories'       => ['except' => []],
         'types'            => ['except' => []],
-        'resolutions'      => ['except' => []],
         'genres'           => ['except' => []],
-        'regions'          => ['except' => []],
-        'distributors'     => ['except' => []],
-        'tmdbId'           => ['except' => ''],
-        'imdbId'           => ['except' => ''],
-        'tvdbId'           => ['except' => ''],
-        'malId'            => ['except' => ''],
         'playlistId'       => ['except' => ''],
         'collectionId'     => ['except' => ''],
         'free'             => ['except' => []],
         'doubleup'         => ['except' => false],
         'featured'         => ['except' => false],
         'stream'           => ['except' => false],
-        'sd'               => ['except' => false],
         'highspeed'        => ['except' => false],
         'bookmarked'       => ['except' => false],
         'wished'           => ['except' => false],
@@ -180,33 +155,24 @@ class TorrentGroupSearch extends Component
             && $field[-1] === '/'
             && @\preg_match($field, 'Validate regex') !== false;
 
-        return Torrent::with(['user:id,username,group_id', 'user.group', 'category', 'type', 'resolution'])
+        return Torrent::with(['user:id,username,group_id', 'user.group', 'category', 'type'])
             ->withCount(['thanks', 'comments'])
-            ->where('imdb', '!=', '0')
             ->when($this->name !== '', fn ($query) => $query->ofName($this->name, $isRegex($this->name)))
             ->when($this->description !== '', fn ($query) => $query->ofDescription($this->description, $isRegex($this->description)))
-            ->when($this->mediainfo !== '', fn ($query) => $query->ofMediainfo($this->mediainfo, $isRegex($this->mediainfo)))
             ->when($this->uploader !== '', fn ($query) => $query->ofUploader($this->uploader))
             ->when($this->keywords !== '', fn ($query) => $query->ofKeyword(\array_map('trim', explode(',', $this->keywords))))
             ->when($this->startYear !== '', fn ($query) => $query->releasedAfterOrIn((int) $this->startYear))
             ->when($this->endYear !== '', fn ($query) => $query->releasedBeforeOrIn((int) $this->endYear))
             ->when($this->categories !== [], fn ($query) => $query->ofCategory($this->categories))
             ->when($this->types !== [], fn ($query) => $query->ofType($this->types))
-            ->when($this->resolutions !== [], fn ($query) => $query->ofResolution($this->resolutions))
             ->when($this->genres !== [], fn ($query) => $query->ofGenre($this->genres))
-            ->when($this->regions !== [], fn ($query) => $query->ofRegion($this->regions))
-            ->when($this->distributors !== [], fn ($query) => $query->ofDistributor($this->distributors))
-            ->when($this->tmdbId !== '', fn ($query) => $query->ofTmdb((int) $this->tmdbId))
-            ->when($this->imdbId !== '', fn ($query) => $query->ofImdb((int) (\preg_match('/tt0*(?=(\d{7,}))/', $this->imdbId, $matches) ? $matches[1] : $this->imdbId)))
-            ->when($this->tvdbId !== '', fn ($query) => $query->ofTvdb((int) $this->tvdbId))
-            ->when($this->malId !== '', fn ($query) => $query->ofMal((int) $this->malId))
+
             ->when($this->playlistId !== '', fn ($query) => $query->ofPlaylist((int) $this->playlistId))
             ->when($this->collectionId !== '', fn ($query) => $query->ofCollection((int) $this->collectionId))
             ->when($this->free !== [], fn ($query) => $query->ofFreeleech($this->free))
             ->when($this->doubleup !== false, fn ($query) => $query->doubleup())
             ->when($this->featured !== false, fn ($query) => $query->featured())
             ->when($this->stream !== false, fn ($query) => $query->streamOptimized())
-            ->when($this->sd !== false, fn ($query) => $query->sd())
             ->when($this->highspeed !== false, fn ($query) => $query->highspeed())
             ->when($this->bookmarked !== false, fn ($query) => $query->bookmarkedBy($user))
             ->when($this->wished !== false, fn ($query) => $query->wishedBy($user))
@@ -221,7 +187,6 @@ class TorrentGroupSearch extends Component
             ->when($this->leeching !== false, fn ($query) => $query->leechedBy($user))
             ->when($this->incomplete !== false, fn ($query) => $query->uncompletedBy($user))
             ->latest('sticky')
-            ->lastPerGroup(['imdb'])
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
     }
