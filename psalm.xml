@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<psalm errorLevel="3"
+        resolveFromConfigFile="true"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://getpsalm.org/schema/config"
+        xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+       reportMixedIssues="false"
+       useDocblockPropertyTypes="true"
+       strictBinaryOperands="true"
+       addParamDefaultToDocblockType="true"
+       checkForThrowsDocblock="true"
+       checkForThrowsInGlobalScope="true"
+       findUnusedVariablesAndParams="true"
+       findUnusedCode="true"
+       ensureArrayStringOffsetsExist="true"
+       ensureArrayIntOffsetsExist="true"
+       allowFileIncludes="false"
+>
+    <projectFiles>
+        <directory name="app"/>
+        <directory name="database/factories"/>
+        <directory name="database/seeders"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+            <directory name="lang"/>
+            <directory name="routes"/>
+            <directory name="storage"/>
+            <directory name="resources"/>
+            <directory name="public"/>
+            <directory name="bootstrap"/>
+        </ignoreFiles>
+    </projectFiles>
+    <plugins>
+        <pluginClass class="Psalm\LaravelPlugin\Plugin"/>
+    </plugins>
+</psalm>

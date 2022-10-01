@@ -45,14 +45,18 @@
         "vstelmakh/url-highlight": "^3.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.7",
+        "barryvdh/laravel-ide-helper": "^2.12",
         "brianium/paratest": "^6.3",
         "fakerphp/faker": "^1.16",
+        "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^6.0",
         "phpunit/phpunit": "^9.5.10",
-        "styleci/cli": "^1.2",
+        "psalm/plugin-laravel": "^2.0",
         "spatie/laravel-ignition": "^1.0",
-        "laravel/sail": "^1.0.1"
+        "styleci/cli": "^1.2",
+        "vimeo/psalm": "^4.27"
     },
     "config": {
         "preferred-install": "dist",

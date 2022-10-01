@@ -41,6 +41,12 @@ laravel-echo-server.lock
 
 # Vim
 .*.swp
-_ide_helper.php
 
 supervisor.ini
+
+# IDE Helper
+_ide_helper.php
+_ide_helper_models.php
+
+# phpstorm helper
+.phpstorm.meta.php
