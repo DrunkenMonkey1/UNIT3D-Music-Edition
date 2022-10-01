@@ -75,16 +75,12 @@ class TorrentController extends Controller
     }
 
     /**
-     * Display The Torrent reasource.
+     * Display The Torrent resource.
      *
-     * @throws \JsonException
-     * @throws \MarcReichel\IGDBLaravel\Exceptions\MissingEndpointException
-     * @throws \ReflectionException
-     * @throws \MarcReichel\IGDBLaravel\Exceptions\InvalidParamsException
      */
     public function show(Request $request, int|string $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $torrent = Torrent::withAnyStatus()->with(['comments', 'category', 'type', 'resolution', 'subtitles', 'playlists'])->findOrFail($id);
+        $torrent = Torrent::withAnyStatus()->with(['comments', 'category', 'type', 'playlists'])->findOrFail($id);
         $uploader = $torrent->user;
         $user = $request->user();
         $freeleechToken = FreeleechToken::where('user_id', '=', $user->id)->where('torrent_id', '=', $torrent->id)->first();
@@ -98,37 +94,8 @@ class TorrentController extends Controller
         $meta = null;
         $trailer = null;
         $platforms = null;
-        if ($torrent->category->tv_meta && $torrent->tmdb && $torrent->tmdb != 0) {
-            $meta = Tv::with('genres', 'cast', 'companies', 'networks', 'recommendations')->where('id', '=', $torrent->tmdb)->first();
-            $trailer = ( new \App\Services\Tmdb\Client\TV($torrent->tmdb))->get_trailer();
-        }
-
-        if ($torrent->category->movie_meta && $torrent->tmdb && $torrent->tmdb != 0) {
-            $meta = Movie::with('genres', 'cast', 'companies', 'collection', 'recommendations')->where('id', '=', $torrent->tmdb)->first();
-            $trailer = ( new \App\Services\Tmdb\Client\Movie($torrent->tmdb))->get_trailer();
-        }
-
-        if ($torrent->category->game_meta && ($torrent->igdb || $torrent->igdb != 0)) {
-            $meta = Game::with([
-                'cover'    => ['url', 'image_id'],
-                'artworks' => ['url', 'image_id'],
-                'genres'   => ['name'],
-                'videos'   => ['video_id', 'name'],
-                'involved_companies.company',
-                'involved_companies.company.logo',
-                'platforms', ])
-                ->find($torrent->igdb);
-            $link = collect($meta->videos)->take(1)->pluck('video_id');
-            $trailer = isset($link[0]) ? 'https://www.youtube.com/embed/'.$link[0] : '/img/no-video.png';
-            $platforms = PlatformLogo::whereIn('id', collect($meta->platforms)->pluck('platform_logo')->toArray())->get();
-        }
 
         $featured = $torrent->featured == 1 ? FeaturedTorrent::where('torrent_id', '=', $id)->first() : null;
-
-        $mediaInfo = null;
-        if ($torrent->mediainfo !== null) {
-            $mediaInfo = (new MediaInfo())->parse($torrent->mediainfo);
-        }
 
         $playlists = $user->playlists;
 
@@ -138,13 +105,11 @@ class TorrentController extends Controller
             'user'               => $user,
             'personal_freeleech' => $personalFreeleech,
             'freeleech_token'    => $freeleechToken,
-            'meta'               => $meta,
             'trailer'            => $trailer,
             'platforms'          => $platforms,
             'total_tips'         => $totalTips,
             'user_tips'          => $userTips,
             'featured'           => $featured,
-            'mediaInfo'          => $mediaInfo,
             'uploader'           => $uploader,
             'last_seed_activity' => $lastSeedActivity,
             'playlists'          => $playlists,
@@ -165,9 +130,6 @@ class TorrentController extends Controller
         return \view('torrent.edit_torrent', [
             'categories'   => Category::all()->sortBy('position'),
             'types'        => Type::all()->sortBy('position'),
-            'resolutions'  => Resolution::all()->sortBy('position'),
-            'regions'      => Region::all()->sortBy('position'),
-            'distributors' => Distributor::all()->sortBy('position'),
             'keywords'     => Keyword::where('torrent_id', '=', $torrent->id)->pluck('name'),
             'torrent'      => $torrent,
             'user'         => $user,
@@ -187,41 +149,16 @@ class TorrentController extends Controller
         $torrent->slug = Str::slug($torrent->name);
         $torrent->description = $request->input('description');
         $torrent->category_id = $request->input('category_id');
-        $torrent->imdb = $request->input('imdb');
-        $torrent->tvdb = $request->input('tvdb');
-        $torrent->tmdb = $request->input('tmdb');
-        $torrent->mal = $request->input('mal');
-        $torrent->igdb = $request->input('igdb');
-        $torrent->season_number = $request->input('season_number');
-        $torrent->episode_number = $request->input('episode_number');
         $torrent->type_id = $request->input('type_id');
-        $torrent->resolution_id = $request->input('resolution_id');
-        $torrent->region_id = $request->input('region_id');
-        $torrent->distributor_id = $request->input('distributor_id');
         $torrent->mediainfo = $request->input('mediainfo');
-        $torrent->bdinfo = $request->input('bdinfo');
         $torrent->anon = $request->input('anonymous');
         $torrent->stream = $request->input('stream');
-        $torrent->sd = $request->input('sd');
         $torrent->internal = $request->input('internal');
         $torrent->personal_release = $request->input('personal_release');
 
         $category = Category::findOrFail($request->input('category_id'));
 
-        $resolutionRule = 'nullable|exists:resolutions,id';
-        if ($category->movie_meta || $category->tv_meta) {
-            $resolutionRule = 'required|exists:resolutions,id';
-        }
 
-        $episodeRule = 'nullable|numeric';
-        if ($category->tv_meta) {
-            $episodeRule = 'required|numeric';
-        }
-
-        $seasonRule = 'nullable|numeric';
-        if ($category->tv_meta) {
-            $seasonRule = 'required|numeric';
-        }
 
         $v = \validator($torrent->toArray(), [
             'name'           => 'required',
@@ -229,16 +166,6 @@ class TorrentController extends Controller
             'description'    => 'required',
             'category_id'    => 'required|exists:categories,id',
             'type_id'        => 'required|exists:types,id',
-            'resolution_id'  => $resolutionRule,
-            'region_id'      => 'nullable|exists:regions,id',
-            'distributor_id' => 'nullable|exists:distributors,id',
-            'imdb'           => 'required|numeric',
-            'tvdb'           => 'required|numeric',
-            'tmdb'           => 'required|numeric',
-            'mal'            => 'required|numeric',
-            'igdb'           => 'required|numeric',
-            'season_number'  => $seasonRule,
-            'episode_number' => $episodeRule,
             'anon'           => 'required',
             'stream'         => 'required',
             'sd'             => 'required',
@@ -272,16 +199,6 @@ class TorrentController extends Controller
 
         foreach (TorrentTools::parseKeywords($request->input('keywords')) as $keyword) {
             Keyword::upsert(['torrent_id' => $torrent->id, 'name' => $keyword], ['torrent_id' => 'name'], ['name']);
-        }
-
-        // TMDB Meta
-        $tmdbScraper = new TMDBScraper();
-        if ($torrent->category->tv_meta && ($torrent->tmdb || $torrent->tmdb != 0)) {
-            $tmdbScraper->tv($torrent->tmdb);
-        }
-
-        if ($torrent->category->movie_meta && ($torrent->tmdb || $torrent->tmdb != 0)) {
-            $tmdbScraper->movie($torrent->tmdb);
         }
 
         return \to_route('torrent', ['id' => $torrent->id])
@@ -339,7 +256,6 @@ class TorrentController extends Controller
                 Warning::where('torrent', '=', $id)->delete();
                 TorrentFile::where('torrent_id', '=', $id)->delete();
                 PlaylistTorrent::where('torrent_id', '=', $id)->delete();
-                Subtitle::where('torrent_id', '=', $id)->delete();
                 Graveyard::where('torrent_id', '=', $id)->delete();
                 FreeleechToken::where('torrent_id', '=', $id)->delete();
                 if ($torrent->featured == 1) {
@@ -367,7 +283,7 @@ class TorrentController extends Controller
     /**
      * Torrent Upload Form.
      */
-    public function create(Request $request, int $categoryId = 0, string $title = '', string $imdb = '0', string $tmdb = '0'): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+    public function create(Request $request, int $categoryId = 0, string $title = ''): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $user = $request->user();
         $categories = [];
@@ -377,11 +293,7 @@ class TorrentController extends Controller
                 'slug' => $cat->slug,
             ];
             $temp['type'] = match (1) {
-                $cat->movie_meta => 'movie',
-                $cat->tv_meta    => 'tv',
-                $cat->game_meta  => 'game',
                 $cat->music_meta => 'music',
-                $cat->no_meta    => 'no',
                 default          => 'no',
             };
             $categories[(int) $cat->id] = $temp;
@@ -390,14 +302,9 @@ class TorrentController extends Controller
         return \view('torrent.upload', [
             'categories'   => $categories,
             'types'        => Type::all()->sortBy('position'),
-            'resolutions'  => Resolution::all()->sortBy('position'),
-            'regions'      => Region::all()->sortBy('position'),
-            'distributors' => Distributor::all()->sortBy('position'),
             'user'         => $user,
             'category_id'  => $categoryId,
             'title'        => $title,
-            'imdb'         => \str_replace('tt', '', $imdb),
-            'tmdb'         => $tmdb,
         ]);
     }
 
@@ -473,8 +380,6 @@ class TorrentController extends Controller
         $torrent->name = $request->input('name');
         $torrent->slug = Str::slug($torrent->name);
         $torrent->description = $request->input('description');
-        $torrent->mediainfo = TorrentTools::anonymizeMediainfo($request->input('mediainfo'));
-        $torrent->bdinfo = $request->input('bdinfo');
         $torrent->info_hash = $infohash;
         $torrent->file_name = $fileName;
         $torrent->num_file = $meta['count'];
@@ -483,17 +388,6 @@ class TorrentController extends Controller
         $torrent->nfo = ($request->hasFile('nfo')) ? TorrentTools::getNfo($request->file('nfo')) : '';
         $torrent->category_id = $category->id;
         $torrent->type_id = $request->input('type_id');
-        $torrent->resolution_id = $request->input('resolution_id');
-        $torrent->region_id = $request->input('region_id');
-        $torrent->distributor_id = $request->input('distributor_id');
-        $torrent->user_id = $user->id;
-        $torrent->imdb = $request->input('imdb');
-        $torrent->tvdb = $request->input('tvdb');
-        $torrent->tmdb = $request->input('tmdb');
-        $torrent->mal = $request->input('mal');
-        $torrent->igdb = $request->input('igdb');
-        $torrent->season_number = $request->input('season_number');
-        $torrent->episode_number = $request->input('episode_number');
         $torrent->anon = $request->input('anonymous');
         $torrent->stream = $request->input('stream');
         $torrent->sd = $request->input('sd');
@@ -503,20 +397,6 @@ class TorrentController extends Controller
         $torrent->moderated_by = 1; //System ID
         $torrent->free = $user->group->is_modo || $user->group->is_internal ? $request->input('free') : 0;
 
-        $resolutionRule = 'nullable|exists:resolutions,id';
-        if ($category->movie_meta || $category->tv_meta) {
-            $resolutionRule = 'required|exists:resolutions,id';
-        }
-
-        $episodeRule = 'nullable|numeric';
-        if ($category->tv_meta) {
-            $episodeRule = 'required|numeric';
-        }
-
-        $seasonRule = 'nullable|numeric';
-        if ($category->tv_meta) {
-            $seasonRule = 'required|numeric';
-        }
 
         // Validation
         $v = \validator($torrent->toArray(), [
@@ -530,20 +410,8 @@ class TorrentController extends Controller
             'size'           => 'required',
             'category_id'    => 'required|exists:categories,id',
             'type_id'        => 'required|exists:types,id',
-            'resolution_id'  => $resolutionRule,
-            'region_id'      => 'nullable|exists:regions,id',
-            'distributor_id' => 'nullable|exists:distributors,id',
-            'user_id'        => 'required|exists:users,id',
-            'imdb'           => 'required|numeric',
-            'tvdb'           => 'required|numeric',
-            'tmdb'           => 'required|numeric',
-            'mal'            => 'required|numeric',
-            'igdb'           => 'required|numeric',
-            'season_number'  => $seasonRule,
-            'episode_number' => $episodeRule,
             'anon'           => 'required',
             'stream'         => 'required',
-            'sd'             => 'required',
             'free'           => 'sometimes|between:0,100',
         ]);
 
@@ -571,16 +439,6 @@ class TorrentController extends Controller
             $torrentFile->torrent_id = $torrent->id;
             $torrentFile->save();
             unset($torrentFile);
-        }
-
-        // TMDB Meta
-        $tmdbScraper = new TMDBScraper();
-        if ($torrent->category->tv_meta !== 0 && ($torrent->tmdb || $torrent->tmdb != 0)) {
-            $tmdbScraper->tv($torrent->tmdb);
-        }
-
-        if ($torrent->category->movie_meta !== 0 && ($torrent->tmdb || $torrent->tmdb != 0)) {
-            $tmdbScraper->movie($torrent->tmdb);
         }
 
         // Torrent Keywords System

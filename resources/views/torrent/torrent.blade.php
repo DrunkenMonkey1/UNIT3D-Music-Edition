@@ -22,21 +22,6 @@
 @section('content')
     <div id="torrent-page">
         <div class="meta-wrapper box container" id="meta-info">
-            {{-- Movie Meta Block --}}
-            @if ($torrent->category->movie_meta)
-                @include('torrent.partials.movie_meta')
-            @endif
-
-            {{-- TV Meta Block --}}
-            @if ($torrent->category->tv_meta)
-                @include('torrent.partials.tv_meta')
-            @endif
-
-            {{-- Game Meta Block --}}
-            @if ($torrent->category->game_meta)
-                @include('torrent.partials.game_meta')
-            @endif
-
             {{-- No Meta Block --}}
             @if ($torrent->category->no_meta)
                 @include('torrent.partials.no_meta')
@@ -69,23 +54,9 @@
                 @include('torrent.partials.downloads')
             @endif
 
-            {{-- MediaInfo Block --}}
-            @if ($torrent->mediainfo !== null)
-                @include('torrent.partials.mediainfo')
-            @endif
-
-            {{-- BDInfo Block --}}
-            @if ($torrent->bdinfo !== null)
-                @include('torrent.partials.bdinfo')
-            @endif
-
             {{-- Description Block --}}
             @include('torrent.partials.description')
 
-            {{-- Subtitles Block --}}
-            @if($torrent->category->movie_meta || $torrent->category->tv_meta)
-                @include('torrent.partials.subtitles')
-            @endif
 
             {{-- TipJar Block --}}
             @include('torrent.partials.tipjar')
@@ -105,26 +76,6 @@
 @endsection
 
 @section('javascripts')
-    @if (isset($trailer))
-        <script nonce="{{ HDVinnie\SecureHeaders\SecureHeaders::nonce() }}">
-          $('.show-trailer').each(function () {
-            $(this).off('click')
-            $(this).on('click', function (e) {
-              e.preventDefault()
-              Swal.fire({
-                showConfirmButton: false,
-                showCloseButton: true,
-                background: 'rgb(35,35,35)',
-                width: 970,
-                html: '<iframe width="930" height="523" src="{{ $trailer }}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
-                title: '<i style="color: #a5a5a5;">Trailer</i>',
-                text: ''
-              })
-            })
-          })
-        </script>
-    @endif
-
     <script nonce="{{ HDVinnie\SecureHeaders\SecureHeaders::nonce() }}">
       $('.torrent-freeleech-token').on('click', function (event) {
         event.preventDefault();
