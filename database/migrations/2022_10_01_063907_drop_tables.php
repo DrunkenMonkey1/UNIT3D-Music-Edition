@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class () extends Migration {
     public function up()
     {
         // The order in witch we drop the tables is important !
@@ -39,6 +39,4 @@ return new class extends Migration {
         Schema::drop('subtitles');
         Schema::drop('collection_movie');
     }
-
-
 };

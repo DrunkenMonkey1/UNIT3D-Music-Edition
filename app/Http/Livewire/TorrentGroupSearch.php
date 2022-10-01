@@ -18,6 +18,7 @@ use App\Models\Torrent;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+
 // TODO Fix the torrent grouping query once we habe have something to group by.
 class TorrentGroupSearch extends Component
 {
