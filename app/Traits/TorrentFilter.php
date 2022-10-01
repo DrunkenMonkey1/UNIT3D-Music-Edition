@@ -234,7 +234,7 @@ trait TorrentFilter
         return $query
             ->whereHas(
                 'files',
-                fn($query) => $query
+                fn ($query) => $query
                     ->where('name', $filename)
             );
     }

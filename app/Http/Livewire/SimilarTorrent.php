@@ -29,6 +29,7 @@ use App\Models\TorrentRequest;
 use App\Models\Tv;
 use App\Models\Warning;
 use Livewire\Component;
+
 // TODO Fix similar torrent
 class SimilarTorrent extends Component
 {
