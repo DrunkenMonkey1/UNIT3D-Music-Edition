@@ -25,7 +25,6 @@ use App\Models\Torrent;
 use App\Models\TorrentFile;
 use App\Models\User;
 use App\Repositories\ChatRepository;
-use App\Services\Tmdb\TMDBScraper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
