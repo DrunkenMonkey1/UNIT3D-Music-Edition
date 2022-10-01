@@ -114,7 +114,6 @@ class TorrentControllerTest extends TestCase
 
         $category = Category::factory()->create();
         $type = Type::factory()->create();
-        $resolution = Resolution::factory()->create();
 
         $torrent = Torrent::factory()->make();
 
@@ -126,16 +125,9 @@ class TorrentControllerTest extends TestCase
             'category_id'   => $category->id,
             'name'          => 'Pony Music - Mind Fragments (2014)',
             'description'   => 'One song that represents the elements of being lost, abandoned, sadness and innocence.',
-            'imdb'          => $torrent->imdb,
-            'tvdb'          => $torrent->tvdb,
-            'tmdb'          => $torrent->tmdb,
-            'mal'           => $torrent->mal,
-            'igdb'          => $torrent->igdb,
             'type_id'       => $type->id,
-            'resolution_id' => $resolution->id,
             'anonymous'     => $torrent->anon,
             'stream'        => $torrent->stream,
-            'sd'            => $torrent->sd,
             'internal'      => $torrent->internal,
             'featured'      => false,
             'doubleup'      => $torrent->doubleup,
