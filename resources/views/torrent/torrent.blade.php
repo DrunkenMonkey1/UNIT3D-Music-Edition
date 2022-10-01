@@ -23,9 +23,7 @@
     <div id="torrent-page">
         <div class="meta-wrapper box container" id="meta-info">
             {{-- No Meta Block --}}
-            @if ($torrent->category->no_meta)
                 @include('torrent.partials.no_meta')
-            @endif
 
             <div style="padding: 10px; position: relative;">
                 <div class="vibrant-overlay"></div>

@@ -49,7 +49,6 @@
                         <thead>
                         <tr>
                             <th>{{ __('torrent.category') }}</th>
-                            <th>{{ __('torrent.type') }}/{{ __('torrent.resolution') }}</th>
                             <th class="torrents-filename">{{ __('torrent.name') }}</th>
                             <th>{{ __('torrent.age') }}</th>
                             <th>{{ __('torrent.size') }}</th>
@@ -82,12 +81,6 @@
                                             <span class="label label-success" data-toggle="tooltip"
                                                   data-original-title="{{ __('torrent.type') }}">
                                                 {{ $new->type->name }}
-                                            </span>
-                                    </div>
-                                    <div class="text-center" style="padding-top: 8px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.resolution') }}">
-                                                {{ $new->resolution->name ?? 'No Res' }}
                                             </span>
                                     </div>
                                 </td>
@@ -319,7 +312,6 @@
                         <thead>
                         <tr>
                             <th>{{ __('torrent.category') }}</th>
-                            <th>{{ __('torrent.type') }}/{{ __('torrent.resolution') }}</th>
                             <th class="torrents-filename">{{ __('torrent.name') }}</th>
                             <th>{{ __('torrent.age') }}</th>
                             <th>{{ __('torrent.size') }}</th>
@@ -353,12 +345,6 @@
                                             <span class="label label-success" data-toggle="tooltip"
                                                   data-original-title="{{ __('torrent.type') }}">
                                                 {{ $seed->type->name }}
-                                            </span>
-                                    </div>
-                                    <div class="text-center" style="padding-top: 8px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.resolution') }}">
-                                                {{ $seed->resolution->name ?? 'No Res' }}
                                             </span>
                                     </div>
                                 </td>
@@ -590,7 +576,6 @@
                         <thead>
                         <tr>
                             <th>{{ __('torrent.category') }}</th>
-                            <th>{{ __('torrent.type') }}/{{ __('torrent.resolution') }}</th>
                             <th class="torrents-filename">{{ __('torrent.name') }}</th>
                             <th>{{ __('torrent.age') }}</th>
                             <th>{{ __('torrent.size') }}</th>
@@ -625,12 +610,6 @@
                                                   data-original-title="{{ __('torrent.type') }}">
                                                 {{ $leech->type->name }}
                                         </span>
-                                    </div>
-                                    <div class="text-center" style="padding-top: 8px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.resolution') }}">
-                                                {{ $leech->resolution->name ?? 'No Res' }}
-                                            </span>
                                     </div>
                                 </td>
 
@@ -861,7 +840,6 @@
                         <thead>
                         <tr>
                             <th>{{ __('torrent.category') }}</th>
-                            <th>{{ __('torrent.type') }}/{{ __('torrent.resolution') }}</th>
                             <th class="torrents-filename">{{ __('torrent.name') }}</th>
                             <th>{{ __('torrent.age') }}</th>
                             <th>{{ __('torrent.size') }}</th>
@@ -895,12 +873,6 @@
                                             <span class="label label-success" data-toggle="tooltip"
                                                   data-original-title="{{ __('torrent.type') }}">
                                                 {{ $d->type->name }}
-                                            </span>
-                                    </div>
-                                    <div class="text-center" style="padding-top: 8px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.resolution') }}">
-                                                {{ $d->resolution->name ?? 'No Res' }}
                                             </span>
                                     </div>
                                 </td>
@@ -1132,7 +1104,6 @@
                         <thead>
                         <tr>
                             <th>{{ __('torrent.category') }}</th>
-                            <th>{{ __('torrent.type') }}/{{ __('torrent.resolution') }}</th>
                             <th class="torrents-filename">{{ __('torrent.name') }}</th>
                             <th>{{ __('torrent.age') }}</th>
                             <th>{{ __('torrent.size') }}</th>
@@ -1166,12 +1137,6 @@
                                             <span class="label label-success" data-toggle="tooltip"
                                                   data-original-title="{{ __('torrent.type') }}">
                                                 {{ $d->type->name }}
-                                            </span>
-                                    </div>
-                                    <div class="text-center" style="padding-top: 8px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.resolution') }}">
-                                                {{ $d->resolution->name ?? 'No Res' }}
                                             </span>
                                     </div>
                                 </td>

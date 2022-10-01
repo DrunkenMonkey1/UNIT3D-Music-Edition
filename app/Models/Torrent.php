@@ -76,30 +76,6 @@ class Torrent extends Model
     }
 
     /**
-     * Belongs To A Resolution.
-     */
-    public function resolution(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Resolution::class);
-    }
-
-    /**
-     * Belongs To A Distributor.
-     */
-    public function distributor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Distributor::class);
-    }
-
-    /**
-     * Belongs To A Region.
-     */
-    public function region(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Region::class);
-    }
-
-    /**
      * Belongs To A Playlist.
      */
     public function playlists(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -198,13 +174,6 @@ class Torrent extends Model
         return $this->hasMany(Peer::class);
     }
 
-    /**
-     * Has Many Subtitles.
-     */
-    public function subtitles(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(Subtitle::class);
-    }
 
     /**
      * Relationship To A Single Request.
@@ -240,13 +209,6 @@ class Torrent extends Model
         $this->attributes['mediainfo'] = $value;
     }
 
-    /**
-     * Formats The Output Of The Media Info Dump.
-     */
-    public function getMediaInfo(): array
-    {
-        return (new MediaInfo())->parse($this->mediaInfo);
-    }
 
     /**
      * Returns The Size In Human Format.

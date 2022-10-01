@@ -388,9 +388,9 @@ class TorrentController extends Controller
         $torrent->nfo = ($request->hasFile('nfo')) ? TorrentTools::getNfo($request->file('nfo')) : '';
         $torrent->category_id = $category->id;
         $torrent->type_id = $request->input('type_id');
+        $torrent->user_id = $user->id;
         $torrent->anon = $request->input('anonymous');
         $torrent->stream = $request->input('stream');
-        $torrent->sd = $request->input('sd');
         $torrent->internal = $request->input('internal');
         $torrent->personal_release = $request->input('personal_release');
         $torrent->moderated_at = Carbon::now();

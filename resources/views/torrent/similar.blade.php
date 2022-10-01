@@ -6,8 +6,7 @@
 @endsection
 
 @section('meta')
-    <meta name="description"
-          content="{{ __('common.similar') }} - {{ $meta->title ?? $meta->name }} ({{ substr($meta->release_date ?? $meta->first_air_date, 0, 4) }})">
+    <meta name="description" content="{{ __('common.similar') }} - {{ $meta->title ?? $meta->name }} ({{ substr($meta->release_date ?? $meta->first_air_date, 0, 4) }})">
 @endsection
 
 @section('breadcrumbs')

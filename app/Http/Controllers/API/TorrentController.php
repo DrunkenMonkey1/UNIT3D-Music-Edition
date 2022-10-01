@@ -104,8 +104,6 @@ class TorrentController extends BaseController
         $torrent->name = $request->input('name');
         $torrent->slug = Str::slug($torrent->name);
         $torrent->description = $request->input('description');
-        $torrent->mediainfo = TorrentTools::anonymizeMediainfo($request->input('mediainfo'));
-        $torrent->bdinfo = $request->input('bdinfo');
         $torrent->info_hash = $infohash;
         $torrent->file_name = $fileName;
         $torrent->num_file = $meta['count'];
@@ -114,20 +112,9 @@ class TorrentController extends BaseController
         $torrent->nfo = ($request->hasFile('nfo')) ? TorrentTools::getNfo($request->file('nfo')) : '';
         $torrent->category_id = $category->id;
         $torrent->type_id = $request->input('type_id');
-        $torrent->resolution_id = $request->input('resolution_id');
-        $torrent->region_id = $request->input('region_id');
-        $torrent->distributor_id = $request->input('distributor_id');
         $torrent->user_id = $user->id;
-        $torrent->imdb = $request->input('imdb');
-        $torrent->tvdb = $request->input('tvdb');
-        $torrent->tmdb = $request->input('tmdb');
-        $torrent->mal = $request->input('mal');
-        $torrent->igdb = $request->input('igdb');
-        $torrent->season_number = $request->input('season_number');
-        $torrent->episode_number = $request->input('episode_number');
         $torrent->anon = $request->input('anonymous');
         $torrent->stream = $request->input('stream');
-        $torrent->sd = $request->input('sd');
         $torrent->personal_release = $request->input('personal_release') ?? 0;
         $torrent->internal = $user->group->is_modo || $user->group->is_internal ? $request->input('internal') : 0;
         $torrent->featured = $user->group->is_modo || $user->group->is_internal ? $request->input('featured') : 0;
@@ -151,20 +138,6 @@ class TorrentController extends BaseController
             $torrent->doubleup = '1';
         }
 
-        $resolutionRule = 'nullable|exists:resolutions,id';
-        if ($category->movie_meta || $category->tv_meta) {
-            $resolutionRule = 'required|exists:resolutions,id';
-        }
-
-        $episodeRule = 'nullable|numeric';
-        if ($category->tv_meta) {
-            $episodeRule = 'required|numeric';
-        }
-
-        $seasonRule = 'nullable|numeric';
-        if ($category->tv_meta) {
-            $seasonRule = 'required|numeric';
-        }
 
         // Validation
         $v = \validator($torrent->toArray(), [
@@ -178,20 +151,9 @@ class TorrentController extends BaseController
             'size'              => 'required',
             'category_id'       => 'required|exists:categories,id',
             'type_id'           => 'required|exists:types,id',
-            'resolution_id'     => $resolutionRule,
-            'region_id'         => 'nullable|exists:regions,id',
-            'distributor_id'    => 'nullable|exists:distributors,id',
             'user_id'           => 'required|exists:users,id',
-            'imdb'              => 'required|numeric',
-            'tvdb'              => 'required|numeric',
-            'tmdb'              => 'required|numeric',
-            'mal'               => 'required|numeric',
-            'igdb'              => 'required|numeric',
-            'season_number'     => $seasonRule,
-            'episode_number'    => $episodeRule,
             'anon'              => 'required',
             'stream'            => 'required',
-            'sd'                => 'required',
             'personal_release'  => 'nullable',
             'internal'          => 'required',
             'featured'          => 'required',
@@ -229,15 +191,6 @@ class TorrentController extends BaseController
             $torrentFile->torrent_id = $torrent->id;
             $torrentFile->save();
             unset($torrentFile);
-        }
-
-        $tmdbScraper = new TMDBScraper();
-        if ($torrent->category->tv_meta && ($torrent->tmdb || $torrent->tmdb != 0)) {
-            $tmdbScraper->tv($torrent->tmdb);
-        }
-
-        if ($torrent->category->movie_meta && ($torrent->tmdb || $torrent->tmdb != 0)) {
-            $tmdbScraper->movie($torrent->tmdb);
         }
 
         // Torrent Keywords System
@@ -346,30 +299,23 @@ class TorrentController extends BaseController
             && $field[-1] === '/'
             && @\preg_match($field, 'Validate regex') !== false;
 
-        $torrents = Torrent::with(['user:id,username,group_id', 'category', 'type', 'resolution'])
+        $torrents = Torrent::with(['user:id,username,group_id', 'category', 'type'])
             ->withCount(['thanks', 'comments'])
             ->when($request->filled('name'), fn ($query) => $query->ofName($request->name, $isRegex($request->name)))
             ->when($request->filled('description'), fn ($query) => $query->ofDescription($request->description, $isRegex($request->description)))
-            ->when($request->filled('mediainfo'), fn ($query) => $query->ofMediainfo($request->mediainfo, $isRegex($request->mediainfo)))
             ->when($request->filled('uploader'), fn ($query) => $query->ofUploader($request->uploader))
             ->when($request->filled('keywords'), fn ($query) => $query->ofKeyword(\array_map('trim', explode(',', $request->keywords))))
             ->when($request->filled('startYear'), fn ($query) => $query->releasedAfterOrIn((int) $request->startYear))
             ->when($request->filled('endYear'), fn ($query) => $query->releasedBeforeOrIn((int) $request->endYear))
             ->when($request->filled('categories'), fn ($query) => $query->ofCategory($request->categories))
             ->when($request->filled('types'), fn ($query) => $query->ofType($request->types))
-            ->when($request->filled('resolutions'), fn ($query) => $query->ofResolution($request->resolutions))
             ->when($request->filled('genres'), fn ($query) => $query->ofGenre($request->genres))
-            ->when($request->filled('tmdbId'), fn ($query) => $query->ofTmdb((int) $request->tmdbId))
-            ->when($request->filled('imdbId'), fn ($query) => $query->ofImdb((int) $request->imdbId))
-            ->when($request->filled('tvdbId'), fn ($query) => $query->ofTvdb((int) $request->tvdbId))
-            ->when($request->filled('malId'), fn ($query) => $query->ofMal((int) $request->malId))
             ->when($request->filled('playlistId'), fn ($query) => $query->ofPlaylist((int) $request->playlistId))
             ->when($request->filled('collectionId'), fn ($query) => $query->ofCollection((int) $request->collectionId))
             ->when($request->filled('free'), fn ($query) => $query->ofFreeleech([25, 50, 75, 100]))
             ->when($request->filled('doubleup'), fn ($query) => $query->doubleup())
             ->when($request->filled('featured'), fn ($query) => $query->featured())
             ->when($request->filled('stream'), fn ($query) => $query->streamOptimized())
-            ->when($request->filled('sd'), fn ($query) => $query->sd())
             ->when($request->filled('highspeed'), fn ($query) => $query->highspeed())
             ->when($request->filled('internal'), fn ($query) => $query->internal())
             ->when($request->filled('personalRelease'), fn ($query) => $query->personalRelease())
@@ -377,8 +323,6 @@ class TorrentController extends BaseController
             ->when($request->filled('dying'), fn ($query) => $query->dying())
             ->when($request->filled('dead'), fn ($query) => $query->dead())
             ->when($request->filled('file_name'), fn ($query) => $query->ofFilename($request->file_name))
-            ->when($request->filled('seasonNumber'), fn ($query) => $query->ofSeason((int) $request->seasonNumber))
-            ->when($request->filled('episodeNumber'), fn ($query) => $query->ofEpisode((int) $request->episodeNumber))
             ->latest('sticky')
             ->orderBy($request->input('sortField') ?? $this->sortField, $request->input('sortDirection') ?? $this->sortDirection)
             ->paginate($request->input('perPage') ?? $this->perPage);

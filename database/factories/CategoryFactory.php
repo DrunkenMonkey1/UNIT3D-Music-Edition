@@ -19,11 +19,6 @@ class CategoryFactory extends Factory
             'image'       => $this->faker->word(),
             'position'    => $this->faker->randomNumber(),
             'icon'        => $this->faker->word(),
-            'no_meta'     => true,
-            'music_meta'  => false,
-            'game_meta'   => false,
-            'tv_meta'     => false,
-            'movie_meta'  => false,
             'num_torrent' => $this->faker->randomNumber(),
         ];
     }

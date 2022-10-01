@@ -70,18 +70,6 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-sm-12 col-xs-6">
-                            <label for="resolutions" class="label label-default">{{ __('common.resolution') }}</label>
-                            @foreach (App\Models\Resolution::select(['id', 'name', 'position'])->get()->sortBy('position') as $resolution)
-                                <span class="badge-user">
-									<label class="inline">
-										<input type="checkbox" wire:model="resolutions" value="{{ $resolution->id }}"> {{ $resolution->name }}
-									</label>
-								</span>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-sm-12 col-xs-6">
                             <label for="extra" class="label label-default">{{ __('common.status') }}</label>
                             <span class="badge-user">
 								<label class="inline">
