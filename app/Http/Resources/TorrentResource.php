@@ -13,8 +13,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Movie;
-use App\Models\Tv;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class TorrentResource extends JsonResource
