@@ -38,5 +38,7 @@ return new class () extends Migration {
         Schema::drop('sessions');
         Schema::drop('subtitles');
         Schema::drop('collection_movie');
+        Schema::drop('types');
+
     }
 };

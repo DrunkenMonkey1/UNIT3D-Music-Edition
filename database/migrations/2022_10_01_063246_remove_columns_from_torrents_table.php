@@ -11,7 +11,7 @@ return new class () extends Migration {
     {
         Schema::table('torrents', function (Blueprint $table) {
             $table->dropColumn(
-                ['tmdb', 'imdb', 'mal', 'bdinfo', 'mediainfo', 'tvdb', 'season_number', 'episode_number', 'sd', 'region_id', 'resolution_id', 'distributor_id', 'igdb']
+                ['tmdb', 'imdb', 'mal', 'bdinfo', 'mediainfo', 'tvdb', 'season_number', 'episode_number', 'sd', 'region_id', 'resolution_id', 'distributor_id', 'igdb','type_id']
             );
         });
     }
