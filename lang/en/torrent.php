@@ -228,7 +228,7 @@ return [
     'release_type'             => 'Release Type',
     'release_types'            => 'Release Types',
     'bitrates'                 => 'Bitrate\'s',
-    'bitrate'                 => 'Bitrate',
+    'bitrate'                  => 'Bitrate',
     'format'                   => 'Format',
     'formats'                  => 'Formats',
     'unbookmark'               => 'Unbookmark',

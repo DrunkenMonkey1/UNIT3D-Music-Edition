@@ -22,5 +22,4 @@ class Genre extends Model
     public $timestamps = false;
 
     public $table = 'genres';
-
 }

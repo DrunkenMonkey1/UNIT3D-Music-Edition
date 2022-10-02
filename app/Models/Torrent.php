@@ -76,7 +76,6 @@ class Torrent extends Model
     public function format(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Format::class);
-
     }
 
     /**
@@ -100,7 +99,7 @@ class Torrent extends Model
      */
     public function recordLabel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-       return $this->belongsTo(RecordLabel::class);
+        return $this->belongsTo(RecordLabel::class);
     }
 
     /**

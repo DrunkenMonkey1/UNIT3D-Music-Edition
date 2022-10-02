@@ -93,7 +93,6 @@ class TorrentRequest extends Model
     public function format(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Format::class);
-
     }
 
     /**

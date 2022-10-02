@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class RecordLabel extends Model
 {
-    use HasFactory, Auditable;
+    use HasFactory;
+    use Auditable;
 
     /**
      * Has Many Torrents.

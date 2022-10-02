@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Source extends Model
 {
+    use HasFactory;
+    use Auditable;
     protected $table = 'sources';
-
-    use HasFactory, Auditable;
     /**
      * Has Many Torrents.
      */
