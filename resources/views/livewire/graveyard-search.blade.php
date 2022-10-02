@@ -54,19 +54,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-sm-12 col-xs-6 adv-search-types">
-                            <label for="types" class="label label-default">{{ __('common.type') }}</label>
-                            @php $types = cache()->remember('types', 3_600, fn () => App\Models\Type::all()->sortBy('position')) @endphp
-                            @foreach ($types as $type)
-                                <span class="badge-user">
-									<label class="inline">
-										<input type="checkbox" wire:model="types" value="{{ $type->id }}"> {{ $type->name }}
-									</label>
-								</span>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="form-group col-sm-12 col-xs-6 adv-search-resolutions">
                             <label for="resolutions" class="label label-default">{{ __('common.resolution') }}</label>
                             @php $resolutions = cache()->remember('resolutions', 3_600, fn () => App\Models\Resolution::all()->sortBy('position')) @endphp
@@ -242,11 +229,7 @@
                                 <i class="{{ $torrent->category->icon }} torrent-icon"
                                    style="padding-top: 1px; font-size: 20px;"></i>
                             </div>
-                            <div class="text-center">
-                                <span class="label label-success" style="font-size: 11px">
-                                    {{ $torrent->type->name }}
-                                </span>
-                            </div>
+
                             <div class="text-center" style="padding-top: 5px;">
                                 <span class="label label-success" style="font-size: 11px">
                                     {{ $torrent->resolution->name ?? 'N/A' }}

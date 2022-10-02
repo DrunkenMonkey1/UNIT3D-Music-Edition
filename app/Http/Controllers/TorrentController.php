@@ -19,10 +19,12 @@ use App\Helpers\Linkify;
 use App\Helpers\TorrentHelper;
 use App\Helpers\TorrentTools;
 use App\Models\Audit;
+use App\Models\Bitrate;
 use App\Models\BonTransactions;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\FeaturedTorrent;
+use App\Models\Format;
 use App\Models\FreeleechToken;
 use App\Models\Graveyard;
 use App\Models\History;
@@ -31,6 +33,8 @@ use App\Models\Peer;
 use App\Models\PersonalFreeleech;
 use App\Models\PlaylistTorrent;
 use App\Models\PrivateMessage;
+use App\Models\ReleaseType;
+use App\Models\Source;
 use App\Models\Torrent;
 use App\Models\TorrentFile;
 use App\Models\TorrentRequest;
@@ -86,7 +90,7 @@ class TorrentController extends Controller
      */
     public function show(Request $request, int|string $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $torrent           = Torrent::withAnyStatus()->with(['comments', 'category', 'type', 'playlists'])->findOrFail($id);
+        $torrent           = Torrent::withAnyStatus()->with(['comments', 'category', 'playlists','format','source','releaseType','bitrate'])->findOrFail($id);
         $uploader          = $torrent->user;
         $user              = $request->user();
         $freeleechToken    = FreeleechToken::where('user_id', '=', $user->id)->where('torrent_id', '=', $torrent->id)->first();
@@ -135,7 +139,10 @@ class TorrentController extends Controller
 
         return view('torrent.edit_torrent', [
             'categories'   => Category::all()->sortBy('position'),
-            'types'        => Type::all()->sortBy('position'),
+            'Source'       => Source::all()->sortBy('position'),
+            'format'       => Format::all()->sortBy('position'),
+            'releaseType'  => ReleaseType::all()->sortBy('position'),
+            'bitrate'      => Bitrate::all()->sortBy('position'),
             'keywords'     => Keyword::where('torrent_id', '=', $torrent->id)->pluck('name'),
             'torrent'      => $torrent,
             'user'         => $user,
@@ -298,16 +305,16 @@ class TorrentController extends Controller
                 'name' => $cat->name,
                 'slug' => $cat->slug,
             ];
-            $temp['type'] = match (1) {
-                $cat->music_meta => 'music',
-                default          => 'no',
-            };
+
             $categories[(int) $cat->id] = $temp;
         }
 
         return view('torrent.upload', [
             'categories'   => $categories,
-            'types'        => Type::all()->sortBy('position'),
+            'sources'       => Source::all()->sortBy('position'),
+            'formats'       => Format::all()->sortBy('position'),
+            'releaseTypes'  => ReleaseType::all()->sortBy('position'),
+            'bitrates'      => Bitrate::all()->sortBy('position'),
             'user'         => $user,
             'category_id'  => $categoryId,
             'title'        => $title,
@@ -393,7 +400,10 @@ class TorrentController extends Controller
         $torrent->size             = $meta['size'];
         $torrent->nfo              = ($request->hasFile('nfo')) ? TorrentTools::getNfo($request->file('nfo')) : '';
         $torrent->category_id      = $category->id;
-        $torrent->type_id          = $request->input('type_id');
+        $torrent->source_id        = $request->input('source_id');
+        $torrent->format_id        = $request->input('format_id');
+        $torrent->release_type_id  = $request->input('releaseType_id');
+        $torrent->bitrate_id       = $request->input('bitrate_id');
         $torrent->user_id          = $user->id;
         $torrent->anon             = $request->input('anonymous');
         $torrent->stream           = $request->input('stream');
@@ -415,7 +425,10 @@ class TorrentController extends Controller
             'announce'       => 'required',
             'size'           => 'required',
             'category_id'    => 'required|exists:categories,id',
-            'type_id'        => 'required|exists:types,id',
+            'source_id'    => 'required|exists:sources,id',
+            'format_id'    => 'required|exists:formats,id',
+            'release_type_id'   => 'required|exists:release_types,id',
+            'bitrate_id'    => 'required|exists:bitrates,id',
             'anon'           => 'required',
             'stream'         => 'required',
             'free'           => 'sometimes|between:0,100',

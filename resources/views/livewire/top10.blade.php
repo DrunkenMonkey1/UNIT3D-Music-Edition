@@ -63,11 +63,6 @@
                             <i class="{{ $torrent->category->icon }} torrent-icon"
                                style="@if ($torrent->category->movie_meta || $torrent->category->tv_meta) padding-top: 1px; @else padding-top: 15px; @endif font-size: 24px;"></i>
                         </div>
-                        <div class="text-center">
-                            <span class="label label-success" style="font-size: 13px">
-                                {{ $torrent->type->name }}
-                            </span>
-                        </div>
                         @if ($torrent->category->movie_meta || $torrent->category->tv_meta)
                             <div class="text-center" style="padding-top: 5px;">
                                 <span class="label label-success" style="font-size: 13px">
@@ -1553,11 +1548,6 @@
                         <div class="text-center">
                             <i class="{{ $torrent->category->icon }} torrent-icon"
                                style="@if ($torrent->category->movie_meta || $torrent->category->tv_meta) padding-top: 1px; @else padding-top: 15px; @endif font-size: 24px;"></i>
-                        </div>
-                        <div class="text-center">
-                            <span class="label label-success" style="font-size: 13px">
-                                {{ $torrent->type->name }}
-                            </span>
                         </div>
                         @if ($torrent->category->movie_meta || $torrent->category->tv_meta)
                             <div class="text-center" style="padding-top: 5px;">

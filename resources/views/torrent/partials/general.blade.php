@@ -19,9 +19,6 @@
                             <span class="torrent-resolution badge-extra text-info text-bold" style="line-height: 14px">
                                 {{ $torrent->resolution->name ?? 'No Res' }}
                             </span>
-                            <span class="torrent-type badge-extra text-info text-bold" style="line-height: 14px">
-                                {{ $torrent->type->name }}
-                            </span>
                             @if (isset($torrent->region_id))
                                 <span class="torrent-region badge-extra text-info text-bold" data-toggle="tooltip"
                                       style="line-height: 14px" title="{{ $torrent->region->name }}"
@@ -507,10 +504,6 @@
                 <td>{{ $torrent->resolution->name ?? 'No Res' }}</td>
             </tr>
 
-            <tr class="torrent-type">
-                <td class="col-sm-2"><strong>{{ __('torrent.type') }}</strong></td>
-                <td>{{ $torrent->type->name }}</td>
-            </tr>
 
             @if (isset($torrent->region_id))
                 <tr class="torrent-region">

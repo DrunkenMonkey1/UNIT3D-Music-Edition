@@ -44,7 +44,6 @@ class TorrentListSearch extends Component
 
     public array $categories = [];
 
-    public array $types = [];
 
     public array $genres = [];
 
@@ -100,7 +99,6 @@ class TorrentListSearch extends Component
         'startYear'        => ['except' => ''],
         'endYear'          => ['except' => ''],
         'categories'       => ['except' => []],
-        'types'            => ['except' => []],
         'genres'           => ['except' => []],
         'playlistId'       => ['except' => ''],
         'collectionId'     => ['except' => ''],
@@ -169,7 +167,7 @@ class TorrentListSearch extends Component
             && $field[-1] === '/'
             && @preg_match($field, 'Validate regex') !== false;
 
-        return Torrent::with(['user:id,username,group_id', 'user.group', 'category', 'type'])
+        return Torrent::with(['user:id,username,group_id', 'user.group', 'category'])
             ->withCount(['thanks', 'comments'])
             ->when($this->name !== '', fn ($query) => $query->ofName($this->name, $isRegex($this->name)))
             ->when($this->description !== '', fn ($query) => $query->ofDescription($this->description, $isRegex($this->description)))
@@ -178,7 +176,6 @@ class TorrentListSearch extends Component
             ->when($this->startYear !== '', fn ($query) => $query->releasedAfterOrIn((int) $this->startYear))
             ->when($this->endYear !== '', fn ($query) => $query->releasedBeforeOrIn((int) $this->endYear))
             ->when($this->categories !== [], fn ($query) => $query->ofCategory($this->categories))
-            ->when($this->types !== [], fn ($query) => $query->ofType($this->types))
             ->when($this->genres !== [], fn ($query) => $query->ofGenre($this->genres))
             ->when($this->playlistId !== '', fn ($query) => $query->ofPlaylist((int) $this->playlistId))
             ->when($this->collectionId !== '', fn ($query) => $query->ofCollection((int) $this->collectionId))

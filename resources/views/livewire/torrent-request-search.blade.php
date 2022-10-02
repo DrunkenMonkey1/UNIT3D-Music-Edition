@@ -58,18 +58,6 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-sm-12 col-xs-6">
-                            <label for="types" class="label label-default">{{ __('common.type') }}</label>
-                            @foreach (App\Models\Type::select(['id', 'name', 'position'])->get()->sortBy('position') as $type)
-                                <span class="badge-user">
-									<label class="inline">
-										<input type="checkbox" wire:model="types" value="{{ $type->id }}"> {{ $type->name }}
-									</label>
-								</span>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-sm-12 col-xs-6">
                             <label for="extra" class="label label-default">{{ __('common.status') }}</label>
                             <span class="badge-user">
 								<label class="inline">

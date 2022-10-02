@@ -23,13 +23,4 @@ class Genre extends Model
 
     public $table = 'genres';
 
-    public function movie(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(Movie::class);
-    }
-
-    public function tv(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(Tv::class);
-    }
 }

@@ -15,7 +15,6 @@ namespace App\Models;
 
 use App\Helpers\Bbcode;
 use App\Helpers\Linkify;
-use App\Helpers\MediaInfo;
 use App\Helpers\StringHelper;
 use App\Notifications\NewComment;
 use App\Notifications\NewThank;
@@ -72,11 +71,44 @@ class Torrent extends Model
     }
 
     /**
-     * Belongs To A Type.
+     * Belongs To A Format.
      */
-    public function type(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function format(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Type::class);
+        return $this->belongsTo(Format::class);
+
+    }
+
+    /**
+     * Belongs To A Source.
+     */
+    public function source(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Source::class);
+    }
+
+    /**
+     * Belongs To A ReleaseType.
+     */
+    public function releaseType(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(ReleaseType::class);
+    }
+
+    /**
+     *  Belongs To A RecordLabel.
+     */
+    public function recordLabel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+       return $this->belongsTo(RecordLabel::class);
+    }
+
+    /**
+     *  Belongs To A Bitrate.
+     */
+    public function bitrate(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Bitrate::class);
     }
 
     /**

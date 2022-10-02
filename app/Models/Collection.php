@@ -31,8 +31,4 @@ class Collection extends Model
         return $this->hasMany(Comment::class, 'collection_id');
     }
 
-    public function movie(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(Movie::class);
-    }
 }

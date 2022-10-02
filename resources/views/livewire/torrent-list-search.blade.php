@@ -77,19 +77,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-sm-12 col-xs-6 adv-search-types">
-                            <label for="types" class="label label-default">{{ __('common.type') }}</label>
-                            @php $types = cache()->remember('types', 3_600, fn () => App\Models\Type::all()->sortBy('position')) @endphp
-                            @foreach ($types as $type)
-                                <span class="badge-user">
-									<label class="inline">
-										<input type="checkbox" wire:model.prefetch="types" value="{{ $type->id }}"> {{ $type->name }}
-									</label>
-								</span>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="form-group col-sm-12 col-xs-6 adv-search-genres">
                             <label for="genres" class="label label-default">{{ __('common.genre') }}</label>
                             @php $genres = cache()->remember('genres', 3_600, fn () => App\Models\Genre::all()->sortBy('name')) @endphp
@@ -402,11 +389,6 @@
                                     <i class="{{ $torrent->category->icon }} torrent-icon"
                                        style="@if ($torrent->category->movie_meta || $torrent->category->tv_meta) padding-top: 1px; @else padding-top: 15px; @endif font-size: 24px;"></i>
                                 @endif
-                            </div>
-                            <div class="text-center">
-                                <span class="label label-success" style="font-size: 13px">
-                                    {{ $torrent->type->name }}
-                                </span>
                             </div>
                         </td>
                         <td class="torrent-listings-overview" style="vertical-align: middle;">

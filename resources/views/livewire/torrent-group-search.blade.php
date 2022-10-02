@@ -77,19 +77,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-sm-12 col-xs-6 adv-search-types">
-                            <label for="types" class="label label-default">{{ __('common.type') }}</label>
-                            @php $types = cache()->remember('types', 3_600, fn () => App\Models\Type::all()->sortBy('position')) @endphp
-                            @foreach ($types as $type)
-                                <span class="badge-user">
-									<label class="inline">
-										<input type="checkbox" wire:model.prefetch="types" value="{{ $type->id }}"> {{ $type->name }}
-									</label>
-								</span>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="form-group col-sm-12 col-xs-6 adv-search-genres">
                             <label for="genres" class="label label-default">{{ __('common.genre') }}</label>
                             @php $genres = cache()->remember('genres', 3_600, fn () => App\Models\Genre::all()->sortBy('name')) @endphp
@@ -978,7 +965,6 @@
                                                     scope="rowgroup"
                                                     rowspan="{{ $loop->count }}"
                                             >
-                                                {{ $torrent->type->name }}
                                             </th>
                                         @endif
                                         @include('livewire.includes._torrent-group-row')
@@ -1006,7 +992,7 @@
                                                                         scope="rowgroup"
                                                                         rowspan="{{ $loop->count }}"
                                                                 >
-                                                                    {{ $torrent->type->name }}
+
                                                                 </th>
                                                             @endif
                                                             @include('livewire.includes._torrent-group-row')
@@ -1059,7 +1045,6 @@
                                                                         scope="rowgroup"
                                                                         rowspan="{{ $loop->count }}"
                                                                 >
-                                                                    {{ $torrent->type->name }}
                                                                 </th>
                                                             @endif
                                                             @include('livewire.includes._torrent-group-row')

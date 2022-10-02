@@ -69,19 +69,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-sm-12 col-xs-6 adv-search-types">
-                            <label for="types" class="label label-default">{{ __('common.type') }}</label>
-                            @php $types = cache()->remember('types', 3_600, fn () => App\Models\Type::all()->sortBy('position')) @endphp
-                            @foreach ($types as $type)
-                                <span class="badge-user">
-									<label class="inline">
-										<input type="checkbox" wire:model="types" value="{{ $type->id }}"> {{ $type->name }}
-									</label>
-								</span>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="form-group col-sm-12 col-xs-6 adv-search-genres">
                             <label for="genres" class="label label-default">{{ __('common.genre') }}</label>
                             @foreach (App\Models\Genre::all()->sortBy('name') as $genre)

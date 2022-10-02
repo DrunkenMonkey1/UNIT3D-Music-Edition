@@ -111,75 +111,121 @@
                     </p>
                     <p class="form__group">
                         <input
-                            type="text"
-                            name="name"
-                            id="title"
-                            class="form__text"
-                            value="{{ $title ?: old('name') }}"
-                            required
+                                type="text"
+                                name="name"
+                                id="title"
+                                class="form__text"
+                                value="{{ $title ?: old('name') }}"
+                                required
                         >
                         <label class="form__label form__label--floating" for="title">{{ __('torrent.title') }}</label>
                     </p>
+                    <div class="form__group--horizontal">
+                        <p class="form__group">
+                            <select
+                                    x-ref="catId"
+                                    name="category_id"
+                                    id="autocat"
+                                    class="form__select"
+                                    required
+                                    x-model="cat"
+                                    @change="cats[cat].type = cats[$event.target.value].type;"
+                            >
+                                <option hidden selected disabled value=""></option>
+                                @foreach ($categories as $id => $category)
+                                    <option class="form__option" value="{{ $id }}">
+                                        {{ $category['name'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <label class="form__label form__label--floating" for="autocat">
+                                {{ __('torrent.category') }}
+                            </label>
+                        </p>
+                        <p class="form__group">
+                            <select
+                                    name="source_id"
+                                    id="source_id"
+                                    class="form__select"
+                                    required
+                            >
+                                <option hidden disabled selected value=""></option>
+                                @foreach ($sources as $source)
+                                    <option value="{{ $source->id }}" @selected(old('source_id')==$source->id)>
+                                        {{ $source->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <label class="form__label form__label--floating" for="autotype">
+                                {{ __('torrent.source') }}
+                            </label>
+                        </p>
+                        <p class="form__group">
+                            <select
+                                    name="format_id"
+                                    id="format_id"
+                                    class="form__select"
+                                    required
+                            >
+                                <option hidden disabled selected value=""></option>
+                                @foreach ($formats as $format)
+                                    <option value="{{ $format->id }}" @selected(old('format_id')==$format->id)>
+                                        {{ $format->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <label class="form__label form__label--floating" for="autotype">
+                                {{ __('torrent.format') }}
+                            </label>
+                        </p>
+                    </div>
+                    <div class="form__group--horizontal">
+                        <p class="form__group">
+                            <select
+                                    name="releaseType_id"
+                                    id="releaseType_id"
+                                    class="form__select"
+                                    required
+                            >
+                                <option hidden disabled selected value=""></option>
+                                @foreach ($releaseTypes as $releaseType)
+                                    <option value="{{ $releaseType->id }}" @selected(old('releaseType_id')==$releaseType->id)>
+                                        {{ $releaseType->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <label class="form__label form__label--floating" for="autotype">
+                                {{ __('torrent.release_type') }}
+                            </label>
+                        </p>
+                        <p class="form__group">
+                            <select
+                                    name="bitrate_id"
+                                    id="bitrate_id"
+                                    class="form__select"
+                                    required
+                            >
+                                <option hidden disabled selected value=""></option>
+                                @foreach ($bitrates as $bitrate)
+                                    <option value="{{ $bitrate->id }}" @selected(old('bitrate_id')==$bitrate->id)>
+                                        {{ $bitrate->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <label class="form__label form__label--floating" for="autotype">
+                                {{ __('torrent.bitrate') }}
+                            </label>
+                        </p>
+                    </div>
+
                     <p class="form__group">
-                        <select
-                            x-ref="catId"
-                            name="category_id"
-                            id="autocat"
-                            class="form__select"
-                            required
-                            x-model="cat"
-                            @change="cats[cat].type = cats[$event.target.value].type;"
-                        >
-                            <option hidden selected disabled value=""></option>
-                            @foreach ($categories as $id => $category)
-                                <option class="form__option" value="{{ $id }}">
-                                    {{ $category['name'] }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <label class="form__label form__label--floating" for="autocat">
-                            {{ __('torrent.category') }}
-                        </label>
-                    </p>
-                    <p class="form__group">
-                        <select
-                            name="type_id"
-                            id="autotype"
-                            class="form__select"
-                            required
-                        >
-                            <option hidden disabled selected value=""></option>
-                            @foreach ($types as $type)
-                                <option value="{{ $type->id }}" @selected(old('type_id')==$type->id)>
-                                    {{ $type->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <label class="form__label form__label--floating" for="autotype">
-                            {{ __('torrent.type') }}
-                        </label>
-                    </p>
-                    <p class="form__group" x-show="cats[cat].type === 'game'">
                         <input
-                            type="text"
-                            name="igdb"
-                            id="autoigdb"
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            x-bind:value="cats[cat].type === 'game' ? '{{ old('igdb') }}' : '0'"
-                            class="form__text"
-                            x-bind:required="cats[cat].type === 'game'"
-                        >
-                        <label class="form__label form__label--floating" for="autoigdb">IGDB ID <b>({{ __('torrent.required-games') }})</b></label>
-                    </p>
-                    <p class="form__group">
-                        <input
-                            type="text"
-                            name="keywords"
-                            id="autokeywords"
-                            class="form__text"
-                            value="{{ old('keywords') }}"
-                            placeholder=""
+                                type="text"
+                                name="keywords"
+                                id="autokeywords"
+                                class="form__text"
+                                value="{{ old('keywords') }}"
+                                placeholder=""
                         >
                         <label class="form__label form__label--floating" for="autokeywords">
                             {{ __('torrent.keywords') }} (<i>{{ __('torrent.keywords-example') }}</i>)

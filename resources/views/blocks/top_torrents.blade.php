@@ -76,14 +76,7 @@
                                     @endif
                                 </td>
 
-                                <td style="width: 1%;">
-                                    <div class="text-center" style="padding-top: 5px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.type') }}">
-                                                {{ $new->type->name }}
-                                            </span>
-                                    </div>
-                                </td>
+
 
                                 <td>
                                     <a class="text-bold" href="{{ route('torrent', ['id' => $new->id]) }}">
@@ -340,14 +333,6 @@
                                     @endif
                                 </td>
 
-                                <td style="width: 1%;">
-                                    <div class="text-center" style="padding-top: 5px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.type') }}">
-                                                {{ $seed->type->name }}
-                                            </span>
-                                    </div>
-                                </td>
 
                                 <td>
                                     <a class="text-bold" href="{{ route('torrent', ['id' => $seed->id]) }}">
@@ -604,14 +589,6 @@
                                     @endif
                                 </td>
 
-                                <td style="width: 1%;">
-                                    <div class="text-center" style="padding-top: 5px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.type') }}">
-                                                {{ $leech->type->name }}
-                                        </span>
-                                    </div>
-                                </td>
 
                                 <td>
                                     <a class="text-bold" href="{{ route('torrent', ['id' => $leech->id]) }}">
@@ -868,14 +845,6 @@
                                     @endif
                                 </td>
 
-                                <td style="width: 1%;">
-                                    <div class="text-center" style="padding-top: 5px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.type') }}">
-                                                {{ $d->type->name }}
-                                            </span>
-                                    </div>
-                                </td>
 
                                 <td>
                                     <a class="text-bold" href="{{ route('torrent', ['id' => $d->id]) }}">
@@ -1130,15 +1099,6 @@
                                                 ></i>
                                             </div>
                                     @endif
-                                </td>
-
-                                <td style="width: 1%;">
-                                    <div class="text-center" style="padding-top: 5px;">
-                                            <span class="label label-success" data-toggle="tooltip"
-                                                  data-original-title="{{ __('torrent.type') }}">
-                                                {{ $d->type->name }}
-                                            </span>
-                                    </div>
                                 </td>
 
                                 <td>

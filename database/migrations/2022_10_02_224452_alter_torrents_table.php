@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->foreignIdFor(Source::class)->constrained();
             $table->foreignIdFor(Format::class)->constrained();
             $table->foreignIdFor(ReleaseType::class)->constrained();
-            $table->foreignIdFor(RecordLabel::class)->constrained();
+            $table->foreignIdFor(RecordLabel::class)->nullable()->constrained(); // @TODO nullable till i find a better way to do this
             $table->foreignIdFor(Bitrate::class)->constrained();
         });
     }

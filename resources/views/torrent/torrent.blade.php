@@ -36,7 +36,6 @@
                 @include('torrent.partials.buttons')
             </div>
         </div>
-
         <div class="meta-general box container">
             {{-- General Info Block --}}
             @include('torrent.partials.general')
