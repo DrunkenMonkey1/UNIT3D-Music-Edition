@@ -18,7 +18,6 @@ use Illuminate\Database\Seeder;
 
 class SourcesTableSeeder extends Seeder
 {
-
     /**
      * Auto generated seed file.
      */
@@ -33,57 +32,57 @@ class SourcesTableSeeder extends Seeder
     {
         return [
             [
-                'id' => 1,
-                'name' => 'CD',
-                'slug' => 'cd',
+                'id'       => 1,
+                'name'     => 'CD',
+                'slug'     => 'cd',
                 'position' => 0,
             ],
             [
-                'id' => 2,
-                'name' => 'DVD',
-                'slug' => 'dvd',
+                'id'       => 2,
+                'name'     => 'DVD',
+                'slug'     => 'dvd',
                 'position' => 1,
             ],
             [
-                'id' => 3,
-                'name' => 'Vinyl',
-                'slug' => 'vinyl',
+                'id'       => 3,
+                'name'     => 'Vinyl',
+                'slug'     => 'vinyl',
                 'position' => 2,
             ],
             [
-                'id' => 4,
-                'name' => 'Blu-Ray',
-                'slug' => 'blu-ray',
+                'id'       => 4,
+                'name'     => 'Blu-Ray',
+                'slug'     => 'blu-ray',
                 'position' => 4,
             ],
             [
-                'id' => 5,
-                'name' => 'Soundboard',
-                'slug' => 'soundboard',
+                'id'       => 5,
+                'name'     => 'Soundboard',
+                'slug'     => 'soundboard',
                 'position' => 5,
             ],
             [
-                'id' => 6,
-                'name' => 'SACD',
-                'slug' => 'sacd',
+                'id'       => 6,
+                'name'     => 'SACD',
+                'slug'     => 'sacd',
                 'position' => 6,
             ],
             [
-                'id' => 7,
-                'name' => 'DAT',
-                'slug' => 'dat',
+                'id'       => 7,
+                'name'     => 'DAT',
+                'slug'     => 'dat',
                 'position' => 7,
             ],
             [
-                'id' => 8,
-                'name' => 'Cassette',
-                'slug' => 'cassette',
+                'id'       => 8,
+                'name'     => 'Cassette',
+                'slug'     => 'cassette',
                 'position' => 8,
             ],
             [
-                'id' => 9,
-                'name' => 'Web',
-                'slug' => 'web',
+                'id'       => 9,
+                'name'     => 'Web',
+                'slug'     => 'web',
                 'position' => 9,
             ],
         ];
