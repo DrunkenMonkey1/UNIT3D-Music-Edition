@@ -17,7 +17,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\File;
 use Livewire\Component;
 use Livewire\WithPagination;
-use SplFileInfo;
+
+use function storage_path;
+use function collect;
+use function preg_match_all;
+use function array_shift;
+use function count;
+use function preg_split;
+use function preg_match;
+use function view;
 
 class LaravelLogViewer extends Component
 {
@@ -48,46 +56,46 @@ class LaravelLogViewer extends Component
 
     final public function getLogFilesProperty()
     {
-        $directory = \storage_path('logs');
+        $directory = storage_path('logs');
 
-        return \collect(File::allFiles($directory))
-            ->sortByDesc(fn (SplFileInfo $file) => $file->getMTime())->values();
+        return collect(File::allFiles($directory))
+            ->sortByDesc(fn (\SplFileInfo $file) => $file->getMTime())->values();
     }
 
     final public function getEntriesProperty(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $files = $this->logFiles;
+        $files     = $this->logFiles;
         $logString = '';
 
         foreach ($this->logs as $log) {
             $logString .= file_get_contents($files[$log]->getPathname());
         }
 
-        $entryPattern = '/^\[(?<date>.*)\]\s(?<env>\w+)\.(?<level>\w+)\:\s/m';
+        $entryPattern   = '/^\[(?<date>.*)\]\s(?<env>\w+)\.(?<level>\w+)\:\s/m';
         $contextPattern = '/^(?<message>[^\{]*)?(?:\{"exception"\:"\[object\]\s\((?<exception>[^\s\(]+))?.*\s(?:in|at)\s(?<in>.*)\:(?<line>\d+)\)?/ms';
 
-        $entries = \collect();
+        $entries = collect();
 
-        if (\preg_match_all($entryPattern, $logString, $entryMatches, PREG_SET_ORDER) !== false) {
-            $stacktraces = \preg_split($entryPattern, $logString);
+        if (preg_match_all($entryPattern, $logString, $entryMatches, PREG_SET_ORDER) !== false) {
+            $stacktraces = preg_split($entryPattern, $logString);
             // Delete the empty first entry
-            \array_shift($stacktraces);
-            $numEntries = \count($entryMatches);
+            array_shift($stacktraces);
+            $numEntries = count($entryMatches);
 
             for ($i = 0; $i < $numEntries; $i++) {
                 // The context is the portion before the first stack trace
-                $context = \preg_split('/^\[stacktrace\]|Stack trace\:/ms', $stacktraces[$i])[0];
+                $context = preg_split('/^\[stacktrace\]|Stack trace\:/ms', $stacktraces[$i])[0];
                 // The `context` consists of a message, an exception, a filename, and a linecount
-                \preg_match($contextPattern, $context, $contextMatches);
+                preg_match($contextPattern, $context, $contextMatches);
 
                 $entries->push([
                     'date'        => $entryMatches[$i]['date'],
                     'env'         => $entryMatches[$i]['env'],
                     'level'       => $entryMatches[$i]['level'],
-                    'message'     => $contextMatches['message'] ?? '',
+                    'message'     => $contextMatches['message']   ?? '',
                     'exception'   => $contextMatches['exception'] ?? '',
-                    'in'          => $contextMatches['in'] ?? '',
-                    'line'        => $contextMatches['line'] ?? '',
+                    'in'          => $contextMatches['in']        ?? '',
+                    'line'        => $contextMatches['line']      ?? '',
                     'stacktrace'  => $stacktraces[$i],
                 ]);
             }
@@ -100,7 +108,7 @@ class LaravelLogViewer extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.laravel-log-viewer', [
+        return view('livewire.laravel-log-viewer', [
             'files'   => $this->logFiles,
             'entries' => $this->entries,
         ])

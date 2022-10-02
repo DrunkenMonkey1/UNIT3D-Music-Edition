@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
+use function sprintf;
+
 class NewRequestFillReject extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -45,7 +47,7 @@ class NewRequestFillReject extends Notification implements ShouldQueue
         return [
             'title' => $this->sender.' Has Rejected Your Fill Of A Requested Torrent',
             'body'  => $this->sender.' has rejected your fill of Requested Torrent '.$this->torrentRequest->name,
-            'url'   => \sprintf('/requests/%s', $this->torrentRequest->id),
+            'url'   => sprintf('/requests/%s', $this->torrentRequest->id),
         ];
     }
 }

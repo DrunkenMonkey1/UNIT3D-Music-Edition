@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 
+use function is_resource;
+use function fclose;
+
 class Peer extends Model
 {
     use HasFactory;
@@ -65,19 +68,19 @@ class Peer extends Model
                 $tmp_ip = '['.$tmp_ip.']';
             }
 
-            $key = config('cache.prefix').':peers:connectable:'.$tmp_ip.'-'.$this->port.'-'.$this->agent;
+            $key   = config('cache.prefix').':peers:connectable:'.$tmp_ip.'-'.$this->port.'-'.$this->agent;
             $cache = Redis::connection('cache')->get($key);
-            $ttl = 0;
+            $ttl   = 0;
             if (isset($cache)) {
                 $ttl = Redis::connection('cache')->command('TTL', [$key]);
             }
             if ($ttl < config('announce.connectable_check_interval')) {
-                $con = @fsockopen($tmp_ip, $this->port, $_, $_, 1);
-                $this->connectable = (int) \is_resource($con);
+                $con               = @fsockopen($tmp_ip, $this->port, $_, $_, 1);
+                $this->connectable = (int) is_resource($con);
                 Redis::connection('cache')->set($key, serialize($this->connectable));
                 Redis::connection('cache')->expire($key, \config('announce.connectable_check_interval') + 3600);
-                if (\is_resource($con)) {
-                    \fclose($con);
+                if (is_resource($con)) {
+                    fclose($con);
                 }
             }
         }

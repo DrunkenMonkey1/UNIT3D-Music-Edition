@@ -19,6 +19,10 @@ use App\Notifications\NewFollow;
 use App\Notifications\NewUnfollow;
 use Illuminate\Http\Request;
 
+use function sprintf;
+use function to_route;
+use function trans;
+
 /**
  * @see \Tests\Feature\Http\Controllers\FollowControllerTest
  */
@@ -32,25 +36,25 @@ class FollowController extends Controller
         $user = User::where('username', '=', $username)->firstOrFail();
 
         if ($request->user()->id == $user->id) {
-            return \to_route('users.show', ['username' => $user->username])
-                ->withErrors(\trans('user.follow-yourself'));
+            return to_route('users.show', ['username' => $user->username])
+                ->withErrors(trans('user.follow-yourself'));
         }
 
         if (! $request->user()->isFollowing($user->id)) {
-            $follow = new Follow();
-            $follow->user_id = $request->user()->id;
+            $follow            = new Follow();
+            $follow->user_id   = $request->user()->id;
             $follow->target_id = $user->id;
             $follow->save();
             if ($user->acceptsNotification($request->user(), $user, 'account', 'show_account_follow')) {
                 $user->notify(new NewFollow('user', $request->user(), $user, $follow));
             }
 
-            return \to_route('users.show', ['username' => $user->username])
-                ->withSuccess(\sprintf(\trans('user.follow-user'), $user->username));
+            return to_route('users.show', ['username' => $user->username])
+                ->withSuccess(sprintf(trans('user.follow-user'), $user->username));
         }
 
-        return \to_route('users.show', ['username' => $user->username])
-            ->withErrors(\trans('user.follow-already'));
+        return to_route('users.show', ['username' => $user->username])
+            ->withErrors(trans('user.follow-already'));
     }
 
     /**
@@ -67,11 +71,11 @@ class FollowController extends Controller
                 $user->notify(new NewUnfollow('user', $request->user(), $user, $follow));
             }
 
-            return \to_route('users.show', ['username' => $user->username])
-                ->withSuccess(\sprintf(\trans('user.follow-revoked'), $user->username));
+            return to_route('users.show', ['username' => $user->username])
+                ->withSuccess(sprintf(trans('user.follow-revoked'), $user->username));
         }
 
-        return \to_route('users.show', ['username' => $user->username])
-            ->withErrors(\trans('user.follow-not-to-begin-with'));
+        return to_route('users.show', ['username' => $user->username])
+            ->withErrors(trans('user.follow-not-to-begin-with'));
     }
 }

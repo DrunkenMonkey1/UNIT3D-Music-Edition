@@ -6,6 +6,8 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function strtotime;
+
 class Ticket extends Model
 {
     use HasFactory;
@@ -37,7 +39,7 @@ class Ticket extends Model
             $query->latest('id');
         }, 'comments.user'])
             ->has('comments')
-            ->where('reminded_at', '<', \strtotime('+ 3 days'))
+            ->where('reminded_at', '<', strtotime('+ 3 days'))
             ->orWhereNull('reminded_at');
     }
 

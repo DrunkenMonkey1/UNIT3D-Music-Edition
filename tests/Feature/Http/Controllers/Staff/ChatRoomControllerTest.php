@@ -36,7 +36,7 @@ class ChatRoomControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user     = $this->createStaffUser();
         $chatroom = Chatroom::factory()->create();
 
         $response = $this->actingAs($user)->delete(route('staff.rooms.destroy', ['id' => $chatroom->id]));
@@ -67,7 +67,7 @@ class ChatRoomControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user     = $this->createStaffUser();
         $chatroom = Chatroom::factory()->make();
 
         $response = $this->actingAs($user)->post(route('staff.rooms.store'), [
@@ -84,7 +84,7 @@ class ChatRoomControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user     = $this->createStaffUser();
         $chatroom = Chatroom::factory()->create();
 
         $response = $this->actingAs($user)->post(route('staff.rooms.update', ['id' => $chatroom->id]), [

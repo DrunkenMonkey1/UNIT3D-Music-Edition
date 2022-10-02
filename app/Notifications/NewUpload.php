@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
+use function sprintf;
+
 class NewUpload extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -44,8 +46,8 @@ class NewUpload extends Notification implements ShouldQueue
     {
         return [
             'title' => $this->torrent->user->username.' Has Uploaded A New Torrent',
-            'body'  => \sprintf('%s, whom you are following has uploaded Torrent %s', $this->torrent->user->username, $this->torrent->name),
-            'url'   => \sprintf('/torrents/%s', $this->torrent->id),
+            'body'  => sprintf('%s, whom you are following has uploaded Torrent %s', $this->torrent->user->username, $this->torrent->name),
+            'url'   => sprintf('/torrents/%s', $this->torrent->id),
         ];
     }
 }

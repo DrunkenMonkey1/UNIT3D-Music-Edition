@@ -19,6 +19,9 @@ use App\Repositories\ChatRepository;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
+use function config;
+use function sprintf;
+
 /**
  * @see \Tests\Unit\Console\Commands\AutoRemoveFeaturedTorrentTest
  */
@@ -51,23 +54,23 @@ class AutoRemoveFeaturedTorrent extends Command
      */
     public function handle(): void
     {
-        $current = Carbon::now();
+        $current          = Carbon::now();
         $featuredTorrents = FeaturedTorrent::where('created_at', '<', $current->copy()->subDays(7)->toDateTimeString())->get();
 
         foreach ($featuredTorrents as $featuredTorrent) {
             // Find The Torrent
             $torrent = Torrent::where('featured', '=', 1)->where('id', '=', $featuredTorrent->torrent_id)->first();
             if (isset($torrent)) {
-                $torrent->free = 0;
+                $torrent->free     = 0;
                 $torrent->doubleup = 0;
                 $torrent->featured = 0;
                 $torrent->save();
 
                 // Auto Announce Featured Expired
-                $appurl = \config('app.url');
+                $appurl = config('app.url');
 
                 $this->chatRepository->systemMessage(
-                    \sprintf('Ladies and Gents, [url=%s/torrents/%s]%s[/url] is no longer featured. :poop:', $appurl, $torrent->id, $torrent->name)
+                    sprintf('Ladies and Gents, [url=%s/torrents/%s]%s[/url] is no longer featured. :poop:', $appurl, $torrent->id, $torrent->name)
                 );
             }
 

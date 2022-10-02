@@ -22,6 +22,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 
+use function min;
+
 class SendDisableUserMail implements ShouldQueue
 {
     use Dispatchable;
@@ -47,7 +49,7 @@ class SendDisableUserMail implements ShouldQueue
     public function handle(): void
     {
         if ($this->attempts() > 2) {
-            $this->delay(\min(30 * $this->attempts(), 300));
+            $this->delay(min(30 * $this->attempts(), 300));
         }
 
         Mail::to($this->user)->send(new DisableUser($this->user));

@@ -17,6 +17,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Watchlist;
 use Illuminate\Http\Request;
 
+use function view;
+use function validator;
+use function to_route;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\WatchlistControllerTest
  */
@@ -27,7 +31,7 @@ class WatchlistController extends Controller
      */
     final public function index(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.watchlist.index');
+        return view('Staff.watchlist.index');
     }
 
     /**
@@ -35,25 +39,25 @@ class WatchlistController extends Controller
      */
     final public function store(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $watchedUser = new Watchlist();
-        $watchedUser->user_id = $id;
+        $watchedUser           = new Watchlist();
+        $watchedUser->user_id  = $id;
         $watchedUser->staff_id = $request->user()->id;
-        $watchedUser->message = $request->input('message');
+        $watchedUser->message  = $request->input('message');
 
-        $v = \validator($watchedUser->toArray(), [
+        $v = validator($watchedUser->toArray(), [
             'user_id'  => 'required|exists:users,id',
             'staff_id' => 'required|exists:users,id',
             'message'  => 'required|min:3',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.watchlist.index')
+            return to_route('staff.watchlist.index')
                 ->withErrors($v->errors());
         }
 
         $watchedUser->save();
 
-        return \to_route('staff.watchlist.index')
+        return to_route('staff.watchlist.index')
             ->withSuccess('User Successfully Being Watched');
     }
 
@@ -67,7 +71,7 @@ class WatchlistController extends Controller
         $watchedUser = Watchlist::findOrFail($id);
         $watchedUser->delete();
 
-        return \to_route('staff.watchlist.index')
+        return to_route('staff.watchlist.index')
             ->withSuccess('Successfully Stopped Watching User');
     }
 }

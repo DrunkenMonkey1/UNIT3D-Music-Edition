@@ -15,13 +15,15 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\Crypt;
 
+use function in_array;
+
 trait Encryptable
 {
     public function getAttribute($key)
     {
         $value = parent::getAttribute($key);
 
-        if (\in_array($key, $this->encryptable, true)) {
+        if (in_array($key, $this->encryptable, true)) {
             return Crypt::decrypt($value);
         }
 
@@ -30,7 +32,7 @@ trait Encryptable
 
     public function setAttribute($key, $value)
     {
-        if (\in_array($key, $this->encryptable, true)) {
+        if (in_array($key, $this->encryptable, true)) {
             $value = Crypt::encrypt($value);
         }
 

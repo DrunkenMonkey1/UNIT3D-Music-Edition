@@ -26,6 +26,16 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use voku\helper\AntiXSS;
 
+use function auth;
+use function is_array;
+use function array_key_exists;
+use function trans;
+use function is_infinite;
+use function round;
+use function htmlspecialchars;
+use function number_format;
+use function config;
+
 class User extends Authenticatable
 {
     use HasFactory;
@@ -64,21 +74,21 @@ class User extends Authenticatable
     public function group(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Group::class)->withDefault([
-            'color'         => \config('user.group.defaults.color'),
-            'effect'        => \config('user.group.defaults.effect'),
-            'icon'          => \config('user.group.defaults.icon'),
-            'name'          => \config('user.group.defaults.name'),
-            'slug'          => \config('user.group.defaults.slug'),
-            'position'      => \config('user.group.defaults.position'),
-            'is_admin'      => \config('user.group.defaults.is_admin'),
-            'is_freeleech'  => \config('user.group.defaults.is_freeleech'),
-            'is_immune'     => \config('user.group.defaults.is_immune'),
-            'is_incognito'  => \config('user.group.defaults.is_incognito'),
-            'is_internal'   => \config('user.group.defaults.is_internal'),
-            'is_modo'       => \config('user.group.defaults.is_modo'),
-            'is_trusted'    => \config('user.group.defaults.is_trusted'),
-            'can_upload'    => \config('user.group.defaults.can_upload'),
-            'level'         => \config('user.group.defaults.level'),
+            'color'         => config('user.group.defaults.color'),
+            'effect'        => config('user.group.defaults.effect'),
+            'icon'          => config('user.group.defaults.icon'),
+            'name'          => config('user.group.defaults.name'),
+            'slug'          => config('user.group.defaults.slug'),
+            'position'      => config('user.group.defaults.position'),
+            'is_admin'      => config('user.group.defaults.is_admin'),
+            'is_freeleech'  => config('user.group.defaults.is_freeleech'),
+            'is_immune'     => config('user.group.defaults.is_immune'),
+            'is_incognito'  => config('user.group.defaults.is_incognito'),
+            'is_internal'   => config('user.group.defaults.is_internal'),
+            'is_modo'       => config('user.group.defaults.is_modo'),
+            'is_trusted'    => config('user.group.defaults.is_trusted'),
+            'can_upload'    => config('user.group.defaults.can_upload'),
+            'level'         => config('user.group.defaults.level'),
         ]);
     }
 
@@ -525,8 +535,8 @@ class User extends Authenticatable
             return false;
         }
 
-        if ($target->notification && $target->notification->$targetGroup && \is_array($target->notification->$targetGroup['default_groups'])) {
-            if (\array_key_exists($sender->group->id, $target->notification->$targetGroup['default_groups'])) {
+        if ($target->notification && $target->notification->$targetGroup && is_array($target->notification->$targetGroup['default_groups'])) {
+            if (array_key_exists($sender->group->id, $target->notification->$targetGroup['default_groups'])) {
                 return $target->notification->$targetGroup['default_groups'][$sender->group->id] == 1;
             }
 
@@ -542,7 +552,7 @@ class User extends Authenticatable
     public function isVisible(self $target, string $group = 'profile', $type = false): bool
     {
         $targetGroup = 'json_'.$group.'_groups';
-        $sender = \auth()->user();
+        $sender      = auth()->user();
         if ($sender->id == $target->id) {
             return true;
         }
@@ -559,8 +569,8 @@ class User extends Authenticatable
             return false;
         }
 
-        if ($target->privacy && $target->privacy->$targetGroup && \is_array($target->privacy->$targetGroup['default_groups'])) {
-            if (\array_key_exists($sender->group->id, $target->privacy->$targetGroup['default_groups'])) {
+        if ($target->privacy && $target->privacy->$targetGroup && is_array($target->privacy->$targetGroup['default_groups'])) {
+            if (array_key_exists($sender->group->id, $target->privacy->$targetGroup['default_groups'])) {
                 return $target->privacy->$targetGroup['default_groups'][$sender->group->id] == 1;
             }
 
@@ -576,7 +586,7 @@ class User extends Authenticatable
     public function isAllowed(self $target, string $group = 'profile', $type = false): bool
     {
         $targetGroup = 'json_'.$group.'_groups';
-        $sender = \auth()->user();
+        $sender      = auth()->user();
         if ($sender->id == $target->id) {
             return true;
         }
@@ -593,8 +603,8 @@ class User extends Authenticatable
             return false;
         }
 
-        if ($target->privacy && $target->privacy->$targetGroup && \is_array($target->privacy->$targetGroup['default_groups'])) {
-            if (\array_key_exists($sender->group->id, $target->privacy->$targetGroup['default_groups'])) {
+        if ($target->privacy && $target->privacy->$targetGroup && is_array($target->privacy->$targetGroup['default_groups'])) {
+            if (array_key_exists($sender->group->id, $target->privacy->$targetGroup['default_groups'])) {
                 return $target->privacy->$targetGroup['default_groups'][$sender->group->id] == 1;
             }
 
@@ -661,13 +671,13 @@ class User extends Authenticatable
             return INF;
         }
 
-        return \round($this->uploaded / $this->downloaded, 2);
+        return round($this->uploaded / $this->downloaded, 2);
     }
 
     public function getRatioString(): string
     {
         $ratio = $this->getRatio();
-        if (\is_infinite($ratio)) {
+        if (is_infinite($ratio)) {
             return '∞';
         }
 
@@ -683,7 +693,7 @@ class User extends Authenticatable
             return INF;
         }
 
-        return \round($this->uploaded / ($this->downloaded + $size), 2);
+        return round($this->uploaded / ($this->downloaded + $size), 2);
     }
 
     /**
@@ -692,11 +702,11 @@ class User extends Authenticatable
     public function ratioAfterSizeString($size, bool $freeleech = false): string
     {
         if ($freeleech) {
-            return $this->getRatioString().' ('.\trans('torrent.freeleech').')';
+            return $this->getRatioString().' ('.trans('torrent.freeleech').')';
         }
 
         $ratio = $this->ratioAfterSize($size);
-        if (\is_infinite($ratio)) {
+        if (is_infinite($ratio)) {
             return '∞';
         }
 
@@ -713,7 +723,7 @@ class User extends Authenticatable
             return '∞';
         }
 
-        $bytes = \round(($this->uploaded / $ratio) - $this->downloaded);
+        $bytes = round(($this->uploaded / $ratio) - $this->downloaded);
 
         return StringHelper::formatBytes($bytes);
     }
@@ -723,7 +733,7 @@ class User extends Authenticatable
      */
     public function setSignatureAttribute(?string $value): void
     {
-        $this->attributes['signature'] = \htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
+        $this->attributes['signature'] = htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
     }
 
     /**
@@ -741,7 +751,7 @@ class User extends Authenticatable
      */
     public function setAboutAttribute(?string $value): void
     {
-        $this->attributes['about'] = \htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
+        $this->attributes['about'] = htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
     }
 
     /**
@@ -765,7 +775,7 @@ class User extends Authenticatable
      */
     public function getSeedbonus(): string
     {
-        return \number_format($this->seedbonus, 0, '.', ',');
+        return number_format($this->seedbonus, 0, '.', ',');
     }
 
     /**
@@ -864,7 +874,7 @@ class User extends Authenticatable
      */
     public function getCompletedSeeds(): int
     {
-        return History::where('user_id', '=', $this->id)->where('seedtime', '>=', \config('hitrun.seedtime'))->count();
+        return History::where('user_id', '=', $this->id)->where('seedtime', '>=', config('hitrun.seedtime'))->count();
     }
 
     /**
@@ -890,7 +900,7 @@ class User extends Authenticatable
      */
     public function getConnectableSeedsizeAttribute(): int
     {
-        if (\config('announce.connectable_check')) {
+        if (config('announce.connectable_check')) {
             $unconnectablePeers = Peer::query()
                 ->select('ip', 'port', 'agent')
                 ->distinct()

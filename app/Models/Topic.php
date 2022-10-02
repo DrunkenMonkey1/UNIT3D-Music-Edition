@@ -18,6 +18,8 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function auth;
+
 class Topic extends Model
 {
     use HasFactory;
@@ -104,7 +106,7 @@ class Topic extends Model
      */
     public function viewable(): bool
     {
-        if (\auth()->user()->group->is_modo) {
+        if (auth()->user()->group->is_modo) {
             return true;
         }
 
@@ -117,7 +119,7 @@ class Topic extends Model
     public function notifyStarter($poster, $topic, $post): bool
     {
         $user = User::find($topic->first_post_user_id);
-        if ($user->acceptsNotification(\auth()->user(), $user, 'forum', 'show_forum_topic')) {
+        if ($user->acceptsNotification(auth()->user(), $user, 'forum', 'show_forum_topic')) {
             $user->notify(new NewPost('topic', $poster, $post));
         }
 

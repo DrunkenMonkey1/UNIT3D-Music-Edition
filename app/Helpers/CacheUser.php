@@ -15,6 +15,8 @@ namespace App\Helpers;
 
 use App\Models\User;
 
+use function cache;
+
 class CacheUser
 {
     public static function user($id)
@@ -23,6 +25,6 @@ class CacheUser
             return;
         }
 
-        return \cache()->remember('cachedUser.'.$id, 30, fn () => User::find($id));
+        return cache()->remember('cachedUser.'.$id, 30, fn () => User::find($id));
     }
 }

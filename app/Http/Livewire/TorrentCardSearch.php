@@ -20,6 +20,12 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function strlen;
+use function preg_match;
+use function array_map;
+use function view;
+use function auth;
+
 class TorrentCardSearch extends Component
 {
     use WithPagination;
@@ -151,25 +157,25 @@ class TorrentCardSearch extends Component
 
     final public function getPersonalFreeleechProperty()
     {
-        return PersonalFreeleech::where('user_id', '=', \auth()->user()->id)->first();
+        return PersonalFreeleech::where('user_id', '=', auth()->user()->id)->first();
     }
 
     final public function getTorrentsProperty(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $user = \auth()->user();
+        $user           = auth()->user();
         $isRegexAllowed = $user->group->is_modo;
-        $isRegex = fn ($field) => $isRegexAllowed
-            && \strlen($field) > 2
-            && $field[0] === '/'
+        $isRegex        = fn ($field) => $isRegexAllowed
+            && strlen($field) > 2
+            && $field[0]  === '/'
             && $field[-1] === '/'
-            && @\preg_match($field, 'Validate regex') !== false;
+            && @preg_match($field, 'Validate regex') !== false;
 
         return Torrent::with(['user:id,username,group_id', 'user.group', 'category', 'type'])
             ->withCount(['thanks', 'comments'])
             ->when($this->name !== '', fn ($query) => $query->ofName($this->name, $isRegex($this->name)))
             ->when($this->description !== '', fn ($query) => $query->ofDescription($this->description, $isRegex($this->description)))
             ->when($this->uploader !== '', fn ($query) => $query->ofUploader($this->uploader))
-            ->when($this->keywords !== '', fn ($query) => $query->ofKeyword(\array_map('trim', explode(',', $this->keywords))))
+            ->when($this->keywords !== '', fn ($query) => $query->ofKeyword(array_map('trim', explode(',', $this->keywords))))
             ->when($this->startYear !== '', fn ($query) => $query->releasedAfterOrIn((int) $this->startYear))
             ->when($this->endYear !== '', fn ($query) => $query->releasedBeforeOrIn((int) $this->endYear))
             ->when($this->categories !== [], fn ($query) => $query->ofCategory($this->categories))
@@ -212,8 +218,8 @@ class TorrentCardSearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.torrent-card-search', [
-            'user'              => User::with(['history:id,seeder,active,completed_at,torrent_id,user_id', 'group'])->findOrFail(\auth()->user()->id),
+        return view('livewire.torrent-card-search', [
+            'user'              => User::with(['history:id,seeder,active,completed_at,torrent_id,user_id', 'group'])->findOrFail(auth()->user()->id),
             'torrents'          => $this->torrents,
             'torrentsStat'      => $this->torrentsStat,
             'personalFreeleech' => $this->personalFreeleech,

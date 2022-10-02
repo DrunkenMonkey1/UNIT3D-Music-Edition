@@ -17,6 +17,8 @@ use App\Models\Person;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function view;
+
 class PersonSearch extends Component
 {
     use WithPagination;
@@ -48,7 +50,7 @@ class PersonSearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.person-search', [
+        return view('livewire.person-search', [
             'persons' => $this->persons,
         ]);
     }

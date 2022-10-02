@@ -17,6 +17,10 @@ use App\Models\FailedLoginAttempt;
 use App\Models\Group;
 use App\Notifications\FailedLogin;
 
+use function cache;
+use function property_exists;
+use function request;
+
 class FailedLoginListener
 {
     /**
@@ -26,18 +30,18 @@ class FailedLoginListener
      */
     public function handle($event): void
     {
-        $bannedGroup = \cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
+        $bannedGroup = cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
 
-        if (\property_exists($event, 'user') && $event->user instanceof \Illuminate\Database\Eloquent\Model
-            && $event->user->group_id !== $bannedGroup[0]) {
+        if (property_exists($event, 'user') && $event->user instanceof \Illuminate\Database\Eloquent\Model
+                                            && $event->user->group_id !== $bannedGroup[0]) {
             FailedLoginAttempt::record(
                 $event->user,
-                \request()->input('username'),
-                \request()->ip()
+                request()->input('username'),
+                request()->ip()
             );
 
             $event->user->notify(new FailedLogin(
-                \request()->ip()
+                request()->ip()
             ));
         }
     }

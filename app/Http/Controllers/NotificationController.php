@@ -16,6 +16,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
+use function view;
+use function redirect;
+use function to_route;
+use function trans;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\NotificationControllerTest
  */
@@ -26,7 +31,7 @@ class NotificationController extends Controller
      */
     public function index(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('notification.index');
+        return view('notification.index');
     }
 
     /**
@@ -37,8 +42,8 @@ class NotificationController extends Controller
         $notification = $request->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
-        return \redirect()->to($notification->data['url'])
-            ->withSuccess(\trans('notification.marked-read'));
+        return redirect()->to($notification->data['url'])
+            ->withSuccess(trans('notification.marked-read'));
     }
 
     /**
@@ -49,19 +54,19 @@ class NotificationController extends Controller
         $notification = $request->user()->notifications()->where('id', '=', $id)->first();
 
         if (! $notification) {
-            return \to_route('notifications.index')
-                ->withErrors(\trans('notification.not-existent'));
+            return to_route('notifications.index')
+                ->withErrors(trans('notification.not-existent'));
         }
 
         if ($notification->read_at != null) {
-            return \to_route('notifications.index')
-                ->withErrors(\trans('notification.already-marked-read'));
+            return to_route('notifications.index')
+                ->withErrors(trans('notification.already-marked-read'));
         }
 
         $notification->markAsRead();
 
-        return \to_route('notifications.index')
-            ->withSuccess(\trans('notification.marked-read'));
+        return to_route('notifications.index')
+            ->withSuccess(trans('notification.marked-read'));
     }
 
     /**
@@ -74,8 +79,8 @@ class NotificationController extends Controller
         $carbon = new Carbon();
         $request->user()->unreadNotifications()->update(['read_at' => $carbon]);
 
-        return \to_route('notifications.index')
-            ->withSuccess(\trans('notification.all-marked-read'));
+        return to_route('notifications.index')
+            ->withSuccess(trans('notification.all-marked-read'));
     }
 
     /**
@@ -85,8 +90,8 @@ class NotificationController extends Controller
     {
         $request->user()->notifications()->findOrFail($id)->delete();
 
-        return \to_route('notifications.index')
-            ->withSuccess(\trans('notification.deleted'));
+        return to_route('notifications.index')
+            ->withSuccess(trans('notification.deleted'));
     }
 
     /**
@@ -96,7 +101,7 @@ class NotificationController extends Controller
     {
         $request->user()->notifications()->delete();
 
-        return \to_route('notifications.index')
-            ->withSuccess(\trans('notification.all-deleted'));
+        return to_route('notifications.index')
+            ->withSuccess(trans('notification.all-deleted'));
     }
 }

@@ -21,6 +21,11 @@ use App\Models\Rss;
 use App\Models\Type;
 use Illuminate\Http\Request;
 
+use function view;
+use function validator;
+use function array_merge;
+use function to_route;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\RssControllerTest
  */
@@ -33,7 +38,7 @@ class RssController extends Controller
     {
         $publicRss = Rss::where('is_private', '=', 0)->oldest('position')->get();
 
-        return \view('Staff.rss.index', [
+        return view('Staff.rss.index', [
             'hash'       => $hash,
             'public_rss' => $publicRss,
         ]);
@@ -46,7 +51,7 @@ class RssController extends Controller
     {
         $user = $request->user();
 
-        return \view('Staff.rss.create', [
+        return view('Staff.rss.create', [
             'categories'  => Category::select(['id', 'name', 'position'])->get()->sortBy('position'),
             'types'       => Type::select(['id', 'name', 'position'])->get()->sortBy('position'),
             'resolutions' => Resolution::select(['id', 'name', 'position'])->get()->sortBy('position'),
@@ -62,7 +67,7 @@ class RssController extends Controller
     {
         $user = $request->user();
 
-        $v = \validator($request->all(), [
+        $v = validator($request->all(), [
             'name'          => 'required|min:3|max:255',
             'search'        => 'max:255',
             'description'   => 'max:255',
@@ -107,18 +112,18 @@ class RssController extends Controller
             'dead',
         ]);
 
-        $error = null;
+        $error   = null;
         $success = null;
 
         if ($v->passes()) {
-            $rss = new Rss();
-            $rss->name = $request->input('name');
-            $rss->user_id = $user->id;
-            $expected = $rss->expected_fields;
-            $rss->json_torrent = \array_merge($expected, $params);
-            $rss->is_private = 0;
-            $rss->staff_id = $user->id;
-            $rss->position = (int) $request->input('position');
+            $rss               = new Rss();
+            $rss->name         = $request->input('name');
+            $rss->user_id      = $user->id;
+            $expected          = $rss->expected_fields;
+            $rss->json_torrent = array_merge($expected, $params);
+            $rss->is_private   = 0;
+            $rss->staff_id     = $user->id;
+            $rss->position     = (int) $request->input('position');
             $rss->save();
             $success = 'Public RSS Feed Created';
         }
@@ -129,11 +134,11 @@ class RssController extends Controller
                 $error = $v->errors();
             }
 
-            return \to_route('staff.rss.create')
+            return to_route('staff.rss.create')
                 ->withErrors($error);
         }
 
-        return \to_route('staff.rss.index')
+        return to_route('staff.rss.index')
             ->withSuccess($success);
     }
 
@@ -143,9 +148,9 @@ class RssController extends Controller
     public function edit(Request $request, int $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $user = $request->user();
-        $rss = Rss::where('is_private', '=', 0)->findOrFail($id);
+        $rss  = Rss::where('is_private', '=', 0)->findOrFail($id);
 
-        return \view('Staff.rss.edit', [
+        return view('Staff.rss.edit', [
             'categories'  => Category::select(['id', 'name', 'position'])->get()->sortBy('position'),
             'types'       => Type::select(['id', 'name', 'position'])->get()->sortBy('position'),
             'resolutions' => Resolution::select(['id', 'name', 'position'])->get()->sortBy('position'),
@@ -162,7 +167,7 @@ class RssController extends Controller
     {
         $rss = Rss::where('is_private', '=', 0)->findOrFail($id);
 
-        $v = \validator($request->all(), [
+        $v = validator($request->all(), [
             'name'          => 'required|min:3|max:255',
             'search'        => 'max:255',
             'description'   => 'max:255',
@@ -206,17 +211,17 @@ class RssController extends Controller
             'dead',
         ]);
 
-        $error = null;
-        $success = null;
+        $error    = null;
+        $success  = null;
         $redirect = null;
 
         if ($v->passes()) {
-            $expected = $rss->expected_fields;
-            $push = \array_merge($expected, $params);
-            $rss->json_torrent = \array_merge($rss->json_torrent, $push);
-            $rss->is_private = 0;
-            $rss->name = $request->input('name');
-            $rss->position = (int) $request->input('position');
+            $expected          = $rss->expected_fields;
+            $push              = array_merge($expected, $params);
+            $rss->json_torrent = array_merge($rss->json_torrent, $push);
+            $rss->is_private   = 0;
+            $rss->name         = $request->input('name');
+            $rss->position     = (int) $request->input('position');
             $rss->save();
             $success = 'Public RSS Feed Updated';
         }
@@ -227,11 +232,11 @@ class RssController extends Controller
                 $error = $v->errors();
             }
 
-            return \to_route('staff.rss.edit', ['id' => $id])
+            return to_route('staff.rss.edit', ['id' => $id])
                 ->withErrors($error);
         }
 
-        return \to_route('staff.rss.index')
+        return to_route('staff.rss.index')
             ->withSuccess($success);
     }
 
@@ -245,7 +250,7 @@ class RssController extends Controller
         $rss = Rss::where('is_private', '=', 0)->findOrFail($id);
         $rss->delete();
 
-        return \to_route('staff.rss.index')
+        return to_route('staff.rss.index')
             ->withSuccess('RSS Feed Deleted!');
     }
 }

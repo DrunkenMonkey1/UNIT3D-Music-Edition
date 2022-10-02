@@ -18,6 +18,8 @@ use App\Models\Torrent;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 
+use function trans;
+
 /**
  * @see \Tests\Todo\Unit\Http\Requests\StorePollTest
  */
@@ -46,7 +48,7 @@ class StoreTipRequest extends FormRequest
                 'exists:torrents,id',
                 function ($attribute, $value, $fail) use ($user) {
                     if (Torrent::find($value)->user->id === $user->id) {
-                        $fail(\trans('bon.failed-yourself'));
+                        $fail(trans('bon.failed-yourself'));
                     }
                 },
             ],
@@ -57,7 +59,7 @@ class StoreTipRequest extends FormRequest
                 'exists:posts,id',
                 function ($attribute, $value, $fail) use ($user) {
                     if (Post::find($value)->user->id === $user->id) {
-                        $fail(\trans('bon.failed-yourself'));
+                        $fail(trans('bon.failed-yourself'));
                     }
                 },
             ],
@@ -76,8 +78,8 @@ class StoreTipRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'tip.min' => \trans('bon.failed-negative'),
-            'tip.max' => \trans('bon.failed-funds-poster'),
+            'tip.min' => trans('bon.failed-negative'),
+            'tip.max' => trans('bon.failed-funds-poster'),
         ];
     }
 }

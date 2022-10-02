@@ -18,6 +18,10 @@ use Illuminate\Support\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function strlen;
+use function view;
+use function auth;
+
 class GraveyardSearch extends Component
 {
     use WithPagination;
@@ -87,11 +91,11 @@ class GraveyardSearch extends Component
 
     final public function getTorrentsProperty(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $user = \auth()->user();
+        $user           = auth()->user();
         $isRegexAllowed = $user->group->is_modo;
-        $isRegex = fn ($field) => $isRegexAllowed
-            && \strlen($field) >= 2
-            && $field[0] === '/'
+        $isRegex        = fn ($field) => $isRegexAllowed
+            && strlen($field) >= 2
+            && $field[0]  === '/'
             && $field[-1] === '/';
 
         return Torrent::with('category', 'type', 'resolution')
@@ -123,8 +127,8 @@ class GraveyardSearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.graveyard-search', [
-            'user'         => \auth()->user(),
+        return view('livewire.graveyard-search', [
+            'user'         => auth()->user(),
             'torrents'     => $this->torrents,
             'torrentsStat' => $this->torrentsStat,
         ]);

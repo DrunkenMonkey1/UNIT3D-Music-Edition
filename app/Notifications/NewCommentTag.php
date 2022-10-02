@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
+use function sprintf;
+
 class NewCommentTag extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -46,7 +48,7 @@ class NewCommentTag extends Notification implements ShouldQueue
             return [
                 'title' => $this->tagger.' Has Tagged You In A Torrent Comment',
                 'body'  => $this->tagger.' has tagged you in a Comment for Torrent '.$this->comment->torrent->name,
-                'url'   => \sprintf('/torrents/%s', $this->comment->torrent->id),
+                'url'   => sprintf('/torrents/%s', $this->comment->torrent->id),
             ];
         }
 
@@ -54,14 +56,14 @@ class NewCommentTag extends Notification implements ShouldQueue
             return [
                 'title' => $this->tagger.' Has Tagged You In A Request Comment',
                 'body'  => $this->tagger.' has tagged you in a Comment for Request '.$this->comment->request->name,
-                'url'   => \sprintf('/requests/%s', $this->comment->request->id),
+                'url'   => sprintf('/requests/%s', $this->comment->request->id),
             ];
         }
 
         return [
             'title' => $this->tagger.' Has Tagged You In An Article Comment',
             'body'  => $this->tagger.' has tagged you in a Comment for Article '.$this->comment->article->title,
-            'url'   => \sprintf('/articles/%s', $this->comment->article->id),
+            'url'   => sprintf('/articles/%s', $this->comment->article->id),
         ];
     }
 }

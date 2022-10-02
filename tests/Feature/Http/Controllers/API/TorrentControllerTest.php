@@ -112,7 +112,7 @@ class TorrentControllerTest extends TestCase
         $user = User::factory()->create();
 
         $category = Category::factory()->create();
-        $type = Type::factory()->create();
+        $type     = Type::factory()->create();
 
         $torrent = Torrent::factory()->make();
 

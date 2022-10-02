@@ -30,6 +30,17 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+use function uniqid;
+use function app;
+use function validator;
+use function config;
+use function sprintf;
+use function route;
+use function auth;
+use function strlen;
+use function preg_match;
+use function array_map;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\TorrentControllerTest
  */
@@ -66,7 +77,7 @@ class TorrentController extends BaseController
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
-        $user = $request->user();
+        $user        = $request->user();
         $requestFile = $request->file('torrent');
         if (! $request->hasFile('torrent')) {
             return $this->sendError('Validation Error.', 'You Must Provide A Torrent File For Upload!');
@@ -78,7 +89,7 @@ class TorrentController extends BaseController
 
         // Deplace and decode the torrent temporarily
         $decodedTorrent = TorrentTools::normalizeTorrent($requestFile);
-        $infohash = Bencode::get_infohash($decodedTorrent);
+        $infohash       = Bencode::get_infohash($decodedTorrent);
 
         try {
             $meta = Bencode::get_meta($decodedTorrent);
@@ -92,54 +103,54 @@ class TorrentController extends BaseController
             }
         }
 
-        $fileName = \sprintf('%s.torrent', \uniqid('', true)); // Generate a unique name
+        $fileName = sprintf('%s.torrent', uniqid('', true)); // Generate a unique name
         Storage::disk('torrents')->put($fileName, Bencode::bencode($decodedTorrent));
 
         // Find the right category
         $category = Category::withCount('torrents')->findOrFail($request->input('category_id'));
 
         // Create the torrent (DB)
-        $torrent = \app()->make(Torrent::class);
-        $torrent->name = $request->input('name');
-        $torrent->slug = Str::slug($torrent->name);
-        $torrent->description = $request->input('description');
-        $torrent->info_hash = $infohash;
-        $torrent->file_name = $fileName;
-        $torrent->num_file = $meta['count'];
-        $torrent->announce = $decodedTorrent['announce'];
-        $torrent->size = $meta['size'];
-        $torrent->nfo = ($request->hasFile('nfo')) ? TorrentTools::getNfo($request->file('nfo')) : '';
-        $torrent->category_id = $category->id;
-        $torrent->type_id = $request->input('type_id');
-        $torrent->user_id = $user->id;
-        $torrent->anon = $request->input('anonymous');
-        $torrent->stream = $request->input('stream');
+        $torrent                   = app()->make(Torrent::class);
+        $torrent->name             = $request->input('name');
+        $torrent->slug             = Str::slug($torrent->name);
+        $torrent->description      = $request->input('description');
+        $torrent->info_hash        = $infohash;
+        $torrent->file_name        = $fileName;
+        $torrent->num_file         = $meta['count'];
+        $torrent->announce         = $decodedTorrent['announce'];
+        $torrent->size             = $meta['size'];
+        $torrent->nfo              = ($request->hasFile('nfo')) ? TorrentTools::getNfo($request->file('nfo')) : '';
+        $torrent->category_id      = $category->id;
+        $torrent->type_id          = $request->input('type_id');
+        $torrent->user_id          = $user->id;
+        $torrent->anon             = $request->input('anonymous');
+        $torrent->stream           = $request->input('stream');
         $torrent->personal_release = $request->input('personal_release') ?? 0;
-        $torrent->internal = $user->group->is_modo || $user->group->is_internal ? $request->input('internal') : 0;
-        $torrent->featured = $user->group->is_modo || $user->group->is_internal ? $request->input('featured') : 0;
-        $torrent->doubleup = $user->group->is_modo || $user->group->is_internal ? $request->input('doubleup') : 0;
-        $du_until = $request->input('du_until');
+        $torrent->internal         = $user->group->is_modo || $user->group->is_internal ? $request->input('internal') : 0;
+        $torrent->featured         = $user->group->is_modo || $user->group->is_internal ? $request->input('featured') : 0;
+        $torrent->doubleup         = $user->group->is_modo || $user->group->is_internal ? $request->input('doubleup') : 0;
+        $du_until                  = $request->input('du_until');
         if (($user->group->is_modo || $user->group->is_internal) && isset($du_until)) {
             $torrent->du_until = Carbon::now()->addDays($request->input('du_until'));
         }
         $torrent->free = $user->group->is_modo || $user->group->is_internal ? $request->input('free') : 0;
-        $fl_until = $request->input('fl_until');
+        $fl_until      = $request->input('fl_until');
         if (($user->group->is_modo || $user->group->is_internal) && isset($fl_until)) {
             $torrent->fl_until = Carbon::now()->addDays($request->input('fl_until'));
         }
-        $torrent->sticky = $user->group->is_modo || $user->group->is_internal ? $request->input('sticky') : 0;
+        $torrent->sticky       = $user->group->is_modo || $user->group->is_internal ? $request->input('sticky') : 0;
         $torrent->moderated_at = Carbon::now();
         $torrent->moderated_by = User::where('username', 'System')->first()->id; //System ID
 
         // Set freeleech and doubleup if featured
         if ($torrent->featured == 1) {
-            $torrent->free = '100';
+            $torrent->free     = '100';
             $torrent->doubleup = '1';
         }
 
 
         // Validation
-        $v = \validator($torrent->toArray(), [
+        $v = validator($torrent->toArray(), [
             'name'              => 'required|unique:torrents',
             'slug'              => 'required',
             'description'       => 'required',
@@ -173,8 +184,8 @@ class TorrentController extends BaseController
         $torrent->save();
         // Set torrent to featured
         if ($torrent->featured == 1) {
-            $featuredTorrent = new FeaturedTorrent();
-            $featuredTorrent->user_id = $user->id;
+            $featuredTorrent             = new FeaturedTorrent();
+            $featuredTorrent->user_id    = $user->id;
             $featuredTorrent->torrent_id = $torrent->id;
             $featuredTorrent->save();
         }
@@ -184,9 +195,9 @@ class TorrentController extends BaseController
         $category->save();
         // Backup the files contained in the torrent
         foreach (TorrentTools::getTorrentFiles($decodedTorrent) as $file) {
-            $torrentFile = new TorrentFile();
-            $torrentFile->name = $file['name'];
-            $torrentFile->size = $file['size'];
+            $torrentFile             = new TorrentFile();
+            $torrentFile->name       = $file['name'];
+            $torrentFile->size       = $file['size'];
             $torrentFile->torrent_id = $torrent->id;
             $torrentFile->save();
             unset($torrentFile);
@@ -194,54 +205,54 @@ class TorrentController extends BaseController
 
         // Torrent Keywords System
         foreach (TorrentTools::parseKeywords($request->input('keywords')) as $keyword) {
-            $tag = new Keyword();
-            $tag->name = $keyword;
+            $tag             = new Keyword();
+            $tag->name       = $keyword;
             $tag->torrent_id = $torrent->id;
             $tag->save();
         }
 
         // check for trusted user and update torrent
         if ($user->group->is_trusted) {
-            $appurl = \config('app.url');
-            $user = $torrent->user;
+            $appurl   = config('app.url');
+            $user     = $torrent->user;
             $username = $user->username;
-            $anon = $torrent->anon;
+            $anon     = $torrent->anon;
             $featured = $torrent->featured;
-            $free = $torrent->free;
+            $free     = $torrent->free;
             $doubleup = $torrent->doubleup;
 
             // Announce To Shoutbox
             if ($anon == 0) {
                 $this->chatRepository->systemMessage(
-                    \sprintf('User [url=%s/users/', $appurl).$username.']'.$username.\sprintf('[/url] has uploaded a new '.$torrent->category->name.'. [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.'[/url], grab it now! :slight_smile:'
+                    sprintf('User [url=%s/users/', $appurl).$username.']'.$username.sprintf('[/url] has uploaded a new '.$torrent->category->name.'. [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.'[/url], grab it now! :slight_smile:'
                 );
             } else {
                 $this->chatRepository->systemMessage(
-                    \sprintf('An anonymous user has uploaded a new '.$torrent->category->name.'. [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.'[/url], grab it now! :slight_smile:'
+                    sprintf('An anonymous user has uploaded a new '.$torrent->category->name.'. [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.'[/url], grab it now! :slight_smile:'
                 );
             }
 
             if ($anon == 1 && $featured == 1) {
                 $this->chatRepository->systemMessage(
-                    \sprintf('Ladies and Gents, [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.'[/url] has been added to the Featured Torrents Slider by an anonymous user! Grab It While You Can! :fire:'
+                    sprintf('Ladies and Gents, [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.'[/url] has been added to the Featured Torrents Slider by an anonymous user! Grab It While You Can! :fire:'
                 );
             } elseif ($anon == 0 && $featured == 1) {
                 $this->chatRepository->systemMessage(
-                    \sprintf('Ladies and Gents, [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.\sprintf('[/url] has been added to the Featured Torrents Slider by [url=%s/users/', $appurl).$username.']'.$username.'[/url]! Grab It While You Can! :fire:'
+                    sprintf('Ladies and Gents, [url=%s/torrents/', $appurl).$torrent->id.']'.$torrent->name.sprintf('[/url] has been added to the Featured Torrents Slider by [url=%s/users/', $appurl).$username.']'.$username.'[/url]! Grab It While You Can! :fire:'
                 );
             }
 
             if ($free >= 1 && $featured == 0) {
                 if ($torrent->fl_until === null) {
                     $this->chatRepository->systemMessage(
-                        \sprintf(
+                        sprintf(
                             'Ladies and Gents, [url=%s/torrents/',
                             $appurl
                         ).$torrent->id.']'.$torrent->name.'[/url] has been granted '.$free.'% FreeLeech! Grab It While You Can! :fire:'
                     );
                 } else {
                     $this->chatRepository->systemMessage(
-                        \sprintf(
+                        sprintf(
                             'Ladies and Gents, [url=%s/torrents/',
                             $appurl
                         ).$torrent->id.']'.$torrent->name.'[/url] has been granted '.$free.'% FreeLeech for '.$request->input('fl_until').' days. :stopwatch:'
@@ -252,14 +263,14 @@ class TorrentController extends BaseController
             if ($doubleup == 1 && $featured == 0) {
                 if ($torrent->du_until === null) {
                     $this->chatRepository->systemMessage(
-                        \sprintf(
+                        sprintf(
                             'Ladies and Gents, [url=%s/torrents/',
                             $appurl
                         ).$torrent->id.']'.$torrent->name.'[/url] has been granted Double Upload! Grab It While You Can! :fire:'
                     );
                 } else {
                     $this->chatRepository->systemMessage(
-                        \sprintf(
+                        sprintf(
                             'Ladies and Gents, [url=%s/torrents/',
                             $appurl
                         ).$torrent->id.']'.$torrent->name.'[/url] has been granted Double Upload for '.$request->input('du_until').' days. :stopwatch:'
@@ -270,7 +281,7 @@ class TorrentController extends BaseController
             TorrentHelper::approveHelper($torrent->id);
         }
 
-        return $this->sendResponse(\route('torrent.download.rsskey', ['id' => $torrent->id, 'rsskey' => \auth('api')->user()->rsskey]), 'Torrent uploaded successfully.');
+        return $this->sendResponse(route('torrent.download.rsskey', ['id' => $torrent->id, 'rsskey' => auth('api')->user()->rsskey]), 'Torrent uploaded successfully.');
     }
 
     /**
@@ -290,20 +301,20 @@ class TorrentController extends BaseController
      */
     public function filter(Request $request): TorrentsResource|\Illuminate\Http\JsonResponse
     {
-        $user = \auth()->user();
+        $user           = auth()->user();
         $isRegexAllowed = $user->group->is_modo;
-        $isRegex = fn ($field) => $isRegexAllowed
-            && \strlen($field) > 2
-            && $field[0] === '/'
+        $isRegex        = fn ($field) => $isRegexAllowed
+            && strlen($field) > 2
+            && $field[0]  === '/'
             && $field[-1] === '/'
-            && @\preg_match($field, 'Validate regex') !== false;
+            && @preg_match($field, 'Validate regex') !== false;
 
         $torrents = Torrent::with(['user:id,username,group_id', 'category', 'type'])
             ->withCount(['thanks', 'comments'])
             ->when($request->filled('name'), fn ($query) => $query->ofName($request->name, $isRegex($request->name)))
             ->when($request->filled('description'), fn ($query) => $query->ofDescription($request->description, $isRegex($request->description)))
             ->when($request->filled('uploader'), fn ($query) => $query->ofUploader($request->uploader))
-            ->when($request->filled('keywords'), fn ($query) => $query->ofKeyword(\array_map('trim', explode(',', $request->keywords))))
+            ->when($request->filled('keywords'), fn ($query) => $query->ofKeyword(array_map('trim', explode(',', $request->keywords))))
             ->when($request->filled('startYear'), fn ($query) => $query->releasedAfterOrIn((int) $request->startYear))
             ->when($request->filled('endYear'), fn ($query) => $query->releasedBeforeOrIn((int) $request->endYear))
             ->when($request->filled('categories'), fn ($query) => $query->ofCategory($request->categories))

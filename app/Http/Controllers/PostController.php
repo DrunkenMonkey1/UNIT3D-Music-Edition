@@ -32,6 +32,16 @@ use App\Repositories\ChatRepository;
 use App\Repositories\TaggedUserRepository;
 use Illuminate\Http\Request;
 
+use function validator;
+use function collect;
+use function config;
+use function view;
+use function sprintf;
+use function redirect;
+use function abort_unless;
+use function to_route;
+use function trans;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\PostControllerTest
  */
@@ -49,40 +59,40 @@ class PostController extends Controller
      */
     public function reply(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $user = $request->user();
-        $topic = Topic::findOrFail($id);
-        $forum = $topic->forum;
+        $user     = $request->user();
+        $topic    = Topic::findOrFail($id);
+        $forum    = $topic->forum;
         $category = Forum::findOrFail($forum->id);
 
         // The user has the right to create a post here?
         if (! $category->getPermission()->reply_topic || ($topic->state == 'close' && ! $request->user()->group->is_modo)) {
-            return \to_route('forums.index')
-                ->withErrors(\trans('forum.reply-topic-error'));
+            return to_route('forums.index')
+                ->withErrors(trans('forum.reply-topic-error'));
         }
 
-        $post = new Post();
-        $post->content = $request->input('content');
-        $post->user_id = $user->id;
+        $post           = new Post();
+        $post->content  = $request->input('content');
+        $post->user_id  = $user->id;
         $post->topic_id = $topic->id;
 
-        $v = \validator($post->toArray(), [
+        $v = validator($post->toArray(), [
             'content'  => 'required|min:1',
             'user_id'  => 'required',
             'topic_id' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('forum_topic', ['id' => $topic->id])
+            return to_route('forum_topic', ['id' => $topic->id])
                 ->withErrors($v->errors());
         }
 
         $post->save();
-        $appurl = \config('app.url');
-        $href = \sprintf('%s/forums/topics/%s?page=%s#post-%s', $appurl, $topic->id, $post->getPageNumber(), $post->id);
-        $message = \sprintf('%s has tagged you in a forum post. You can view it [url=%s] HERE [/url]', $user->username, $href);
+        $appurl  = config('app.url');
+        $href    = sprintf('%s/forums/topics/%s?page=%s#post-%s', $appurl, $topic->id, $post->getPageNumber(), $post->id);
+        $message = sprintf('%s has tagged you in a forum post. You can view it [url=%s] HERE [/url]', $user->username, $href);
         if ($this->taggedUserRepository->hasTags($request->input('content'))) {
             if ($this->taggedUserRepository->contains($request->input('content'), '@here') && $user->group->is_modo) {
-                $users = \collect([]);
+                $users = collect([]);
 
                 $topic->posts()->get()->each(function ($p) use ($users) {
                     $users->push($p->user);
@@ -107,7 +117,7 @@ class PostController extends Controller
         }
 
         // Save last post user data to topic table
-        $topic->last_post_user_id = $user->id;
+        $topic->last_post_user_id       = $user->id;
         $topic->last_post_user_username = $user->username;
         // Count post in topic
         $topic->num_post = Post::where('topic_id', '=', $topic->id)->count();
@@ -120,23 +130,23 @@ class PostController extends Controller
         // Count topics
         $forum->num_topic = $forum->getTopicCount($forum->id);
         // Save last post user data to the forum table
-        $forum->last_post_user_id = $user->id;
+        $forum->last_post_user_id       = $user->id;
         $forum->last_post_user_username = $user->username;
         // Save last topic data to the forum table
-        $forum->last_topic_id = $topic->id;
+        $forum->last_topic_id   = $topic->id;
         $forum->last_topic_name = $topic->name;
         // Save
         $forum->save();
         // Post To Chatbox
-        $appurl = \config('app.url');
-        $postUrl = \sprintf('%s/forums/topics/%s?page=%s#post-%s', $appurl, $topic->id, $post->getPageNumber(), $post->id);
-        $realUrl = \sprintf('/forums/topics/%s?page=%s#post-%s', $topic->id, $post->getPageNumber(), $post->id);
-        $profileUrl = \sprintf('%s/users/%s', $appurl, $user->username);
+        $appurl     = config('app.url');
+        $postUrl    = sprintf('%s/forums/topics/%s?page=%s#post-%s', $appurl, $topic->id, $post->getPageNumber(), $post->id);
+        $realUrl    = sprintf('/forums/topics/%s?page=%s#post-%s', $topic->id, $post->getPageNumber(), $post->id);
+        $profileUrl = sprintf('%s/users/%s', $appurl, $user->username);
 
-        if (\config('other.staff-forum-notify') && ($forum->id == \config('other.staff-forum-id') || $forum->parent_id == \config('other.staff-forum-id'))) {
+        if (config('other.staff-forum-notify') && ($forum->id == config('other.staff-forum-id') || $forum->parent_id == config('other.staff-forum-id'))) {
             $topic->notifyStaffers($user, $topic, $post);
         } else {
-            $this->chatRepository->systemMessage(\sprintf('[url=%s]%s[/url] has left a reply on topic [url=%s]%s[/url]', $profileUrl, $user->username, $postUrl, $topic->name));
+            $this->chatRepository->systemMessage(sprintf('[url=%s]%s[/url] has left a reply on topic [url=%s]%s[/url]', $profileUrl, $user->username, $postUrl, $topic->name));
             // Notify All Subscribers Of New Reply
             if ($topic->first_user_poster_id != $user->id) {
                 $topic->notifyStarter($user, $topic, $post);
@@ -159,8 +169,8 @@ class PostController extends Controller
         $user->addProgress(new UserMade800Posts(), 1);
         $user->addProgress(new UserMade900Posts(), 1);
 
-        return \redirect()->to($realUrl)
-            ->withSuccess(\trans('forum.reply-topic-success'));
+        return redirect()->to($realUrl)
+            ->withSuccess(trans('forum.reply-topic-success'));
     }
 
     /**
@@ -168,12 +178,12 @@ class PostController extends Controller
      */
     public function postEditForm(int $id, int $postId): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $topic = Topic::findOrFail($id);
-        $forum = $topic->forum;
+        $topic    = Topic::findOrFail($id);
+        $forum    = $topic->forum;
         $category = $forum->getCategory();
-        $post = Post::findOrFail($postId);
+        $post     = Post::findOrFail($postId);
 
-        return \view('forum.post_edit', [
+        return view('forum.post_edit', [
             'topic'    => $topic,
             'forum'    => $forum,
             'post'     => $post,
@@ -186,16 +196,16 @@ class PostController extends Controller
      */
     public function postEdit(Request $request, int $postId): \Illuminate\Http\RedirectResponse
     {
-        $user = $request->user();
-        $post = Post::findOrFail($postId);
-        $postUrl = \sprintf('forums/topics/%s?page=%s#post-%s', $post->topic->id, $post->getPageNumber(), $postId);
+        $user    = $request->user();
+        $post    = Post::findOrFail($postId);
+        $postUrl = sprintf('forums/topics/%s?page=%s#post-%s', $post->topic->id, $post->getPageNumber(), $postId);
 
-        \abort_unless($user->group->is_modo || $user->id === $post->user_id, 403);
+        abort_unless($user->group->is_modo || $user->id === $post->user_id, 403);
         $post->content = $request->input('content');
         $post->save();
 
-        return \redirect()->to($postUrl)
-            ->withSuccess(\trans('forum.edit-post-success'));
+        return redirect()->to($postUrl)
+            ->withSuccess(trans('forum.edit-post-success'));
     }
 
     /**
@@ -208,10 +218,10 @@ class PostController extends Controller
         $user = $request->user();
         $post = Post::with('topic')->findOrFail($postId);
 
-        \abort_unless($user->group->is_modo || $user->id === $post->user_id, 403);
+        abort_unless($user->group->is_modo || $user->id === $post->user_id, 403);
         $post->delete();
 
-        return \to_route('forum_topic', ['id' => $post->topic->id])
-            ->withSuccess(\trans('forum.delete-post-success'));
+        return to_route('forum_topic', ['id' => $post->topic->id])
+            ->withSuccess(trans('forum.delete-post-success'));
     }
 }

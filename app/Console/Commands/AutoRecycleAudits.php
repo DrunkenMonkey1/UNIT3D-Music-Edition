@@ -17,6 +17,8 @@ use App\Models\Audit;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
+use function config;
+
 /**
  * @see \Tests\Unit\Console\Commands\AutoRecycleAuditsTest
  */
@@ -42,7 +44,7 @@ class AutoRecycleAudits extends Command
     public function handle(): void
     {
         $current = Carbon::now();
-        $audits = Audit::where('created_at', '<', $current->copy()->subDays(\config('audit.recycle'))->toDateTimeString())->get();
+        $audits  = Audit::where('created_at', '<', $current->copy()->subDays(config('audit.recycle'))->toDateTimeString())->get();
 
         foreach ($audits as $audit) {
             $audit->delete();

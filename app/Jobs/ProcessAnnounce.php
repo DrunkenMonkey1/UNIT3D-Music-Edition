@@ -26,6 +26,11 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 
+use function strtolower;
+use function config;
+use function md5;
+use function now;
+
 class ProcessAnnounce implements ShouldQueue
 {
     use Dispatchable;
@@ -59,9 +64,9 @@ class ProcessAnnounce implements ShouldQueue
         $ghost = false;
 
         // Set Variables
-        $realUploaded = $this->queries['uploaded'];
+        $realUploaded   = $this->queries['uploaded'];
         $realDownloaded = $this->queries['downloaded'];
-        $event = \strtolower($this->queries['event']);
+        $event          = strtolower($this->queries['event']);
 
         // Get The Current Peer
         $peer = Peer::query()
@@ -94,14 +99,14 @@ class ProcessAnnounce implements ShouldQueue
 
         // Check Ghost Flag
         if ($ghost) {
-            $uploaded = ($realUploaded >= $history->client_uploaded) ? ($realUploaded - $history->client_uploaded) : 0;
+            $uploaded   = ($realUploaded >= $history->client_uploaded) ? ($realUploaded - $history->client_uploaded) : 0;
             $downloaded = ($realDownloaded >= $history->client_downloaded) ? ($realDownloaded - $history->client_downloaded) : 0;
         } else {
-            $uploaded = ($realUploaded >= $peer->uploaded) ? ($realUploaded - $peer->uploaded) : 0;
+            $uploaded   = ($realUploaded >= $peer->uploaded) ? ($realUploaded - $peer->uploaded) : 0;
             $downloaded = ($realDownloaded >= $peer->downloaded) ? ($realDownloaded - $peer->downloaded) : 0;
         }
 
-        $oldUpdate = $peer->updated_at->timestamp ?? \now()->timestamp;
+        $oldUpdate = $peer->updated_at->timestamp ?? now()->timestamp;
 
         // Modification of Upload and Download
         $personalFreeleech = PersonalFreeleech::query()
@@ -113,23 +118,23 @@ class ProcessAnnounce implements ShouldQueue
             ->where('torrent_id', '=', $this->torrent->id)
             ->first();
 
-        if ($personalFreeleech ||
+        if ($personalFreeleech                    ||
             $this->user->group->is_freeleech == 1 ||
-            $freeleechToken ||
-            \config('other.freeleech') == 1) {
+            $freeleechToken                       ||
+            config('other.freeleech') == 1) {
             $modDownloaded = 0;
         } elseif ($this->torrent->free >= 1) {
             // FL value in DB are from 0% to 100%.
             // Divide it by 100 and multiply it with "downloaded" to get discount download.
-            $fl_discount = $downloaded * $this->torrent->free / 100;
+            $fl_discount   = $downloaded * $this->torrent->free / 100;
             $modDownloaded = $downloaded - $fl_discount;
         } else {
             $modDownloaded = $downloaded;
         }
 
-        if ($this->torrent->doubleup == 1 ||
+        if ($this->torrent->doubleup             == 1 ||
             $this->user->group->is_double_upload == 1 ||
-            \config('other.doubleup') == 1) {
+            config('other.doubleup')             == 1) {
             $modUploaded = $uploaded * 2;
         } else {
             $modUploaded = $uploaded;
@@ -137,78 +142,78 @@ class ProcessAnnounce implements ShouldQueue
 
         switch ($event) {
             case 'started':
-                $peer->peer_id = $this->queries['peer_id'];
-                $peer->md5_peer_id = \md5($this->queries['peer_id']);
-                $peer->info_hash = $this->queries['info_hash'];
-                $peer->ip = $this->queries['ip-address'];
-                $peer->port = $this->queries['port'];
-                $peer->agent = $this->queries['user-agent'];
-                $peer->uploaded = $realUploaded;
-                $peer->downloaded = $realDownloaded;
-                $peer->seeder = (int) ($this->queries['left'] == 0);
-                $peer->left = $this->queries['left'];
-                $peer->torrent_id = $this->torrent->id;
-                $peer->user_id = $this->user->id;
+                $peer->peer_id     = $this->queries['peer_id'];
+                $peer->md5_peer_id = md5($this->queries['peer_id']);
+                $peer->info_hash   = $this->queries['info_hash'];
+                $peer->ip          = $this->queries['ip-address'];
+                $peer->port        = $this->queries['port'];
+                $peer->agent       = $this->queries['user-agent'];
+                $peer->uploaded    = $realUploaded;
+                $peer->downloaded  = $realDownloaded;
+                $peer->seeder      = (int) ($this->queries['left'] == 0);
+                $peer->left        = $this->queries['left'];
+                $peer->torrent_id  = $this->torrent->id;
+                $peer->user_id     = $this->user->id;
                 $peer->updateConnectableStateIfNeeded();
-                $peer->updated_at = \now();
+                $peer->updated_at = now();
                 $peer->save();
 
-                $history->user_id = $this->user->id;
+                $history->user_id    = $this->user->id;
                 $history->torrent_id = $this->torrent->id;
-                $history->info_hash = $this->queries['info_hash'];
-                $history->agent = $this->queries['user-agent'];
-                $history->active = 1;
-                $history->seeder = (int) ($this->queries['left'] == 0);
-                $history->immune = $this->user->group->is_immune == 1;
-                $history->uploaded += 0;
+                $history->info_hash  = $this->queries['info_hash'];
+                $history->agent      = $this->queries['user-agent'];
+                $history->active     = 1;
+                $history->seeder     = (int) ($this->queries['left'] == 0);
+                $history->immune     = $this->user->group->is_immune == 1;
+                $history->uploaded        += 0;
                 $history->actual_uploaded += 0;
                 $history->client_uploaded = $realUploaded;
-                $history->downloaded += 0;
+                $history->downloaded        += 0;
                 $history->actual_downloaded += 0;
                 $history->client_downloaded = $realDownloaded;
                 $history->save();
                 break;
 
             case 'completed':
-                $peer->peer_id = $this->queries['peer_id'];
-                $peer->md5_peer_id = \md5($this->queries['peer_id']);
-                $peer->info_hash = $this->queries['info_hash'];
-                $peer->ip = $this->queries['ip-address'];
-                $peer->port = $this->queries['port'];
-                $peer->agent = $this->queries['user-agent'];
-                $peer->uploaded = $realUploaded;
-                $peer->downloaded = $realDownloaded;
-                $peer->seeder = (int) ($this->queries['left'] == 0);
-                $peer->left = $this->queries['left'];
-                $peer->torrent_id = $this->torrent->id;
-                $peer->user_id = $this->user->id;
+                $peer->peer_id     = $this->queries['peer_id'];
+                $peer->md5_peer_id = md5($this->queries['peer_id']);
+                $peer->info_hash   = $this->queries['info_hash'];
+                $peer->ip          = $this->queries['ip-address'];
+                $peer->port        = $this->queries['port'];
+                $peer->agent       = $this->queries['user-agent'];
+                $peer->uploaded    = $realUploaded;
+                $peer->downloaded  = $realDownloaded;
+                $peer->seeder      = (int) ($this->queries['left'] == 0);
+                $peer->left        = $this->queries['left'];
+                $peer->torrent_id  = $this->torrent->id;
+                $peer->user_id     = $this->user->id;
                 $peer->updateConnectableStateIfNeeded();
-                $peer->updated_at = \now();
+                $peer->updated_at = now();
                 $peer->save();
 
-                $history->user_id = $this->user->id;
+                $history->user_id    = $this->user->id;
                 $history->torrent_id = $this->torrent->id;
-                $history->info_hash = $this->queries['info_hash'];
-                $history->agent = $this->queries['user-agent'];
-                $history->active = 1;
-                $history->seeder = (int) ($this->queries['left'] == 0);
-                $history->uploaded += $modUploaded;
+                $history->info_hash  = $this->queries['info_hash'];
+                $history->agent      = $this->queries['user-agent'];
+                $history->active     = 1;
+                $history->seeder     = (int) ($this->queries['left'] == 0);
+                $history->uploaded        += $modUploaded;
                 $history->actual_uploaded += $uploaded;
                 $history->client_uploaded = $realUploaded;
-                $history->downloaded += $modDownloaded;
+                $history->downloaded        += $modDownloaded;
                 $history->actual_downloaded += $downloaded;
                 $history->client_downloaded = $realDownloaded;
-                $history->completed_at = \now();
+                $history->completed_at      = now();
                 // Seedtime allocation
                 if ($this->queries['left'] == 0) {
                     $newUpdate = $peer->updated_at->timestamp;
-                    $diff = $newUpdate - $oldUpdate;
+                    $diff      = $newUpdate - $oldUpdate;
                     $history->seedtime += $diff;
                 }
                 $history->save();
 
                 // User Update
-                $this->user->uploaded += $modUploaded;
+                $this->user->uploaded   += $modUploaded;
                 $this->user->downloaded += $modDownloaded;
                 $this->user->save();
                 // End User Update
@@ -220,22 +225,22 @@ class ProcessAnnounce implements ShouldQueue
             case 'stopped':
                 $peer->touch();
 
-                $history->user_id = $this->user->id;
+                $history->user_id    = $this->user->id;
                 $history->torrent_id = $this->torrent->id;
-                $history->info_hash = $this->queries['info_hash'];
-                $history->agent = $this->queries['user-agent'];
-                $history->active = 0;
-                $history->seeder = (int) ($this->queries['left'] == 0);
-                $history->uploaded += $modUploaded;
+                $history->info_hash  = $this->queries['info_hash'];
+                $history->agent      = $this->queries['user-agent'];
+                $history->active     = 0;
+                $history->seeder     = (int) ($this->queries['left'] == 0);
+                $history->uploaded        += $modUploaded;
                 $history->actual_uploaded += $uploaded;
                 $history->client_uploaded = $realUploaded;
-                $history->downloaded += $modDownloaded;
+                $history->downloaded        += $modDownloaded;
                 $history->actual_downloaded += $downloaded;
                 $history->client_downloaded = $realDownloaded;
                 // Seedtime allocation
                 if ($this->queries['left'] == 0) {
                     $newUpdate = $peer->updated_at->timestamp;
-                    $diff = $newUpdate - $oldUpdate;
+                    $diff      = $newUpdate - $oldUpdate;
                     $history->seedtime += $diff;
                 }
                 $history->save();
@@ -243,52 +248,52 @@ class ProcessAnnounce implements ShouldQueue
                 $peer->delete();
 
                 // User Update
-                $this->user->uploaded += $modUploaded;
+                $this->user->uploaded   += $modUploaded;
                 $this->user->downloaded += $modDownloaded;
                 $this->user->save();
                 // End User Update
                 break;
 
             default:
-                $peer->peer_id = $this->queries['peer_id'];
-                $peer->md5_peer_id = \md5($this->queries['peer_id']);
-                $peer->info_hash = $this->queries['info_hash'];
-                $peer->ip = $this->queries['ip-address'];
-                $peer->port = $this->queries['port'];
-                $peer->agent = $this->queries['user-agent'];
-                $peer->uploaded = $realUploaded;
-                $peer->downloaded = $realDownloaded;
-                $peer->seeder = (int) ($this->queries['left'] == 0);
-                $peer->left = $this->queries['left'];
-                $peer->torrent_id = $this->torrent->id;
-                $peer->user_id = $this->user->id;
+                $peer->peer_id     = $this->queries['peer_id'];
+                $peer->md5_peer_id = md5($this->queries['peer_id']);
+                $peer->info_hash   = $this->queries['info_hash'];
+                $peer->ip          = $this->queries['ip-address'];
+                $peer->port        = $this->queries['port'];
+                $peer->agent       = $this->queries['user-agent'];
+                $peer->uploaded    = $realUploaded;
+                $peer->downloaded  = $realDownloaded;
+                $peer->seeder      = (int) ($this->queries['left'] == 0);
+                $peer->left        = $this->queries['left'];
+                $peer->torrent_id  = $this->torrent->id;
+                $peer->user_id     = $this->user->id;
                 $peer->updateConnectableStateIfNeeded();
-                $peer->updated_at = \now();
+                $peer->updated_at = now();
                 $peer->save();
 
-                $history->user_id = $this->user->id;
+                $history->user_id    = $this->user->id;
                 $history->torrent_id = $this->torrent->id;
-                $history->info_hash = $this->queries['info_hash'];
-                $history->agent = $this->queries['user-agent'];
-                $history->active = 1;
-                $history->seeder = (int) ($this->queries['left'] == 0);
-                $history->uploaded += $modUploaded;
+                $history->info_hash  = $this->queries['info_hash'];
+                $history->agent      = $this->queries['user-agent'];
+                $history->active     = 1;
+                $history->seeder     = (int) ($this->queries['left'] == 0);
+                $history->uploaded        += $modUploaded;
                 $history->actual_uploaded += $uploaded;
                 $history->client_uploaded = $realUploaded;
-                $history->downloaded += $modDownloaded;
+                $history->downloaded        += $modDownloaded;
                 $history->actual_downloaded += $downloaded;
                 $history->client_downloaded = $realDownloaded;
                 // Seedtime allocation
                 if ($this->queries['left'] == 0) {
                     $newUpdate = $peer->updated_at->timestamp;
-                    $diff = $newUpdate - $oldUpdate;
+                    $diff      = $newUpdate - $oldUpdate;
                     $history->seedtime += $diff;
                 }
 
                 $history->save();
 
                 // User Update
-                $this->user->uploaded += $modUploaded;
+                $this->user->uploaded   += $modUploaded;
                 $this->user->downloaded += $modDownloaded;
                 $this->user->save();
                 // End User Update
@@ -299,7 +304,7 @@ class ProcessAnnounce implements ShouldQueue
             ->selectRaw('count(case when peers.left > 0 then 1 end) as leechers')
             ->selectRaw('count(case when peers.left = 0 then 1 end) as seeders')
             ->first();
-        $this->torrent->seeders = $peerCount->seeders;
+        $this->torrent->seeders  = $peerCount->seeders;
         $this->torrent->leechers = $peerCount->leechers;
         $this->torrent->save();
     }

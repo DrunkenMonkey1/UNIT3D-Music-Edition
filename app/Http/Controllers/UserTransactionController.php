@@ -23,6 +23,13 @@ use App\Repositories\ChatRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
+use function view;
+use function abort_unless;
+use function sprintf;
+use function config;
+use function to_route;
+use function trans;
+
 /**
  * @see \Tests\Feature\Http\Controllers\BonusControllerTest
  */
@@ -42,13 +49,13 @@ class UserTransactionController extends Controller
     {
         $user = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id === $user->id, 403);
+        abort_unless($request->user()->id === $user->id, 403);
 
-        $userbon = $user->getSeedbonus();
+        $userbon  = $user->getSeedbonus();
         $activefl = $user->personalFreeleeches()->exists();
-        $items = BonExchange::all();
+        $items    = BonExchange::all();
 
-        return \view('bonus.store', [
+        return view('bonus.store', [
             'user'              => $user,
             'userbon'           => $userbon,
             'activefl'          => $activefl,
@@ -63,10 +70,10 @@ class UserTransactionController extends Controller
     {
         $user = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id === $user->id, 403);
+        abort_unless($request->user()->id === $user->id, 403);
 
         $request = (object) $request->validated();
-        $item = BonExchange::findOrFail($request->exchange);
+        $item    = BonExchange::findOrFail($request->exchange);
 
         switch (true) {
             case $item->upload:
@@ -76,17 +83,17 @@ class UserTransactionController extends Controller
                 $user->decrement('downloaded', $item->value);
                 break;
             case $item->personal_freeleech:
-                $personalFreeleech = new PersonalFreeleech();
+                $personalFreeleech          = new PersonalFreeleech();
                 $personalFreeleech->user_id = $user->id;
                 $personalFreeleech->save();
 
                 // Send Private Message
-                $privateMessage = new PrivateMessage();
-                $privateMessage->sender_id = 1;
+                $privateMessage              = new PrivateMessage();
+                $privateMessage->sender_id   = 1;
                 $privateMessage->receiver_id = $user->id;
-                $privateMessage->subject = \trans('bon.pm-subject');
-                $privateMessage->message = \sprintf(\trans('bon.pm-message'), Carbon::now()->addDays(1)->toDayDateTimeString()).\config('app.timezone').'[/b]! 
-                [color=red][b]'.\trans('common.system-message').'[/b][/color]';
+                $privateMessage->subject     = trans('bon.pm-subject');
+                $privateMessage->message     = sprintf(trans('bon.pm-message'), Carbon::now()->addDays(1)->toDayDateTimeString()).config('app.timezone').'[/b]! 
+                [color=red][b]'.trans('common.system-message').'[/b][/color]';
                 $privateMessage->save();
                 break;
             case $item->invite:
@@ -94,18 +101,18 @@ class UserTransactionController extends Controller
                 break;
         }
 
-        $bonTransaction = new BonTransactions();
-        $bonTransaction->itemID = $item->id;
-        $bonTransaction->name = $item->description;
-        $bonTransaction->cost = $item->value;
-        $bonTransaction->sender = $user->id;
-        $bonTransaction->comment = $item->description;
+        $bonTransaction             = new BonTransactions();
+        $bonTransaction->itemID     = $item->id;
+        $bonTransaction->name       = $item->description;
+        $bonTransaction->cost       = $item->value;
+        $bonTransaction->sender     = $user->id;
+        $bonTransaction->comment    = $item->description;
         $bonTransaction->torrent_id = null;
         $bonTransaction->save();
 
         $user->decrement('seedbonus', $item->cost);
 
-        return \to_route('transactions.create', ['username' => $user->username])
-            ->withSuccess(\trans('bon.success'));
+        return to_route('transactions.create', ['username' => $user->username])
+            ->withSuccess(trans('bon.success'));
     }
 }

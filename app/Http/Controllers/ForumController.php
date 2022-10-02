@@ -20,6 +20,11 @@ use App\Repositories\ChatRepository;
 use App\Repositories\TaggedUserRepository;
 use Illuminate\Http\Request;
 
+use function sprintf;
+use function is_array;
+use function to_route;
+use function view;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\Staff\ForumControllerTest
  */
@@ -37,23 +42,23 @@ class ForumController extends Controller
      */
     public function search(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $result = null;
+        $result     = null;
         $categories = Forum::all()->sortBy('position');
 
         $user = $request->user();
 
         $pests = $user->group->permissions->where('show_forum', '=', 0)->pluck('forum_id')->toArray();
-        if (! \is_array($pests)) {
+        if (! is_array($pests)) {
             $pests = [];
         }
 
         $topicNeos = $user->subscriptions->where('topic_id', '>', 0)->pluck('topic_id')->toArray();
-        if (! \is_array($topicNeos)) {
+        if (! is_array($topicNeos)) {
             $topicNeos = [];
         }
 
         $forumNeos = $user->subscriptions->where('forum_id', '>', 0)->pluck('forum_id')->toArray();
-        if (! \is_array($forumNeos)) {
+        if (! is_array($forumNeos)) {
             $forumNeos = [];
         }
 
@@ -123,7 +128,7 @@ class ForumController extends Controller
             $category = (int) $request->input('category');
             if ($category > 0 && $category < 99_999_999_999) {
                 $children = Forum::where('parent_id', '=', $category)->get()->toArray();
-                if (\is_array($children)) {
+                if (is_array($children)) {
                     $result->where(function ($query) use ($category, $children) {
                         $query->where('topics.forum_id', '=', $category)->orWhereIn('topics.forum_id', $children);
                     });
@@ -133,17 +138,17 @@ class ForumController extends Controller
 
         if ($request->has('body') && $request->input('body') != '') {
             if ($request->has('sorting') && $request->input('sorting') != null) {
-                $sorting = \sprintf('posts.%s', $request->input('sorting'));
+                $sorting   = sprintf('posts.%s', $request->input('sorting'));
                 $direction = $request->input('direction');
             } else {
-                $sorting = 'posts.id';
+                $sorting   = 'posts.id';
                 $direction = 'desc';
             }
         } elseif ($request->has('sorting') && $request->input('sorting') != null) {
-            $sorting = \sprintf('topics.%s', $request->input('sorting'));
+            $sorting   = sprintf('topics.%s', $request->input('sorting'));
             $direction = $request->input('direction');
         } else {
-            $sorting = 'topics.last_reply_at';
+            $sorting   = 'topics.last_reply_at';
             $direction = 'desc';
         }
         $results = $result->orderBy($sorting, $direction)->paginate(25)->withQueryString();
@@ -157,7 +162,7 @@ class ForumController extends Controller
 
         $params = $request->all();
 
-        return \view($logger, [
+        return view($logger, [
             'categories' => $categories,
             'results'    => $results,
             'user'       => $user,
@@ -178,17 +183,17 @@ class ForumController extends Controller
         $user = $request->user();
 
         $pests = $user->group->permissions->where('show_forum', '=', 0)->pluck('forum_id')->toArray();
-        if (! \is_array($pests)) {
+        if (! is_array($pests)) {
             $pests = [];
         }
 
         $topicNeos = $user->subscriptions->where('topic_id', '>', '0')->pluck('topic_id')->toArray();
-        if (! \is_array($topicNeos)) {
+        if (! is_array($topicNeos)) {
             $topicNeos = [];
         }
 
         $forumNeos = $user->subscriptions->where('forum_id', '>', '0')->pluck('forum_id')->toArray();
-        if (! \is_array($forumNeos)) {
+        if (! is_array($forumNeos)) {
             $forumNeos = [];
         }
 
@@ -208,7 +213,7 @@ class ForumController extends Controller
 
         $params = $request->all();
 
-        return \view('forum.subscriptions', [
+        return view('forum.subscriptions', [
             'results'    => $results,
             'user'       => $user,
             'name'       => $request->input('name'),
@@ -230,7 +235,7 @@ class ForumController extends Controller
         $user = $request->user();
 
         $pests = $user->group->permissions->where('show_forum', '=', 0)->pluck('forum_id')->toArray();
-        if (! \is_array($pests)) {
+        if (! is_array($pests)) {
             $pests = [];
         }
 
@@ -243,7 +248,7 @@ class ForumController extends Controller
         // Total Topics Count
         $numTopics = Topic::count();
 
-        return \view('forum.latest_topics', [
+        return view('forum.latest_topics', [
             'results'    => $results,
             'user'       => $user,
             'num_posts'  => $numPosts,
@@ -260,7 +265,7 @@ class ForumController extends Controller
         $user = $request->user();
 
         $pests = $user->group->permissions->where('show_forum', '=', 0)->pluck('forum_id')->toArray();
-        if (! \is_array($pests)) {
+        if (! is_array($pests)) {
             $pests = [];
         }
 
@@ -273,7 +278,7 @@ class ForumController extends Controller
         // Total Topics Count
         $numTopics = Topic::count();
 
-        return \view('forum.latest_posts', [
+        return view('forum.latest_posts', [
             'results'    => $results,
             'user'       => $user,
             'num_posts'  => $numPosts,
@@ -296,7 +301,7 @@ class ForumController extends Controller
         // Total Topics Count
         $numTopics = Topic::count();
 
-        return \view('forum.index', [
+        return view('forum.index', [
             'categories' => $categories,
             'num_posts'  => $numPosts,
             'num_forums' => $numForums,
@@ -321,20 +326,20 @@ class ForumController extends Controller
 
         // Check if this is a category or forum
         if ($forum->parent_id == 0) {
-            return \to_route('forums.categories.show', ['id' => $forum->id]);
+            return to_route('forums.categories.show', ['id' => $forum->id]);
         }
 
         // Check if the user has permission to view the forum
         $category = Forum::findOrFail($forum->id);
         if (! $category->getPermission()->show_forum) {
-            return \to_route('forums.index')
+            return to_route('forums.index')
                 ->withErrors('You Do Not Have Access To This Forum!');
         }
 
         // Fetch topics->posts in descending order
         $topics = $forum->topics()->latest('pinned')->latest('last_reply_at')->latest()->paginate(25);
 
-        return \view('forum.display', [
+        return view('forum.display', [
             'forum'      => $forum,
             'topics'     => $topics,
             'category'   => $category,

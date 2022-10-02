@@ -19,6 +19,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
+use function sprintf;
+
 class NewFollow extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -46,7 +48,7 @@ class NewFollow extends Notification implements ShouldQueue
         return [
             'title' => $this->sender->username.' Has Followed You!',
             'body'  => $this->sender->username.' has started to follow you so they will get notifications about your activities.',
-            'url'   => \sprintf('/users/%s', $this->sender->username),
+            'url'   => sprintf('/users/%s', $this->sender->username),
         ];
     }
 }

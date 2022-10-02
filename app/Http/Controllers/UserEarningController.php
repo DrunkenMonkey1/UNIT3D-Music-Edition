@@ -19,6 +19,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
+use function abort_unless;
+use function view;
+
 /**
  * @see \Tests\Feature\Http\Controllers\BonusControllerTest
  */
@@ -38,7 +41,7 @@ class UserEarningController extends Controller
     {
         $user = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id == $user->id || $request->user()->group->is_modo, 403);
+        abort_unless($request->user()->id == $user->id || $request->user()->group->is_modo, 403);
 
         $userbon = $user->getSeedbonus();
 
@@ -137,18 +140,18 @@ class UserEarningController extends Controller
 
         //Total points per hour
         $total = 2.00 * $dying
-            + 1.50 * $legendary
-            + 1.00 * $old
-            + 0.75 * $huge
-            + 0.50 * $large
-            + 0.25 * $regular
-            + 0.25 * $participant
-            + 0.50 * $teamplayer
-            + 0.75 * $committed
-            + 1.00 * $mvp
-            + 2.00 * $legend;
+            + 1.50    * $legendary
+            + 1.00    * $old
+            + 0.75    * $huge
+            + 0.50    * $large
+            + 0.25    * $regular
+            + 0.25    * $participant
+            + 0.50    * $teamplayer
+            + 0.75    * $committed
+            + 1.00    * $mvp
+            + 2.00    * $legend;
 
-        return \view('bonus.index', [
+        return view('bonus.index', [
             'user'              => $user,
             'userbon'           => $userbon,
             'dying'             => $dying,

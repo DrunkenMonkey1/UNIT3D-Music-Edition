@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+use function config;
+
 class ActivateUser extends Mailable
 {
     use Queueable;
@@ -33,6 +35,6 @@ class ActivateUser extends Mailable
     public function build(): static
     {
         return $this->markdown('emails.activate')
-            ->subject('Activation Required '.\config('other.title'));
+            ->subject('Activation Required '.config('other.title'));
     }
 }

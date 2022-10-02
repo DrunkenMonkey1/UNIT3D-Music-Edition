@@ -42,7 +42,7 @@ class AutoDeactivateWarning extends Command
      */
     public function handle(): void
     {
-        $current = Carbon::now();
+        $current  = Carbon::now();
         $warnings = Warning::with(['warneduser', 'torrenttitle'])->where('active', '=', 1)->where('expires_on', '<', $current)->get();
 
         foreach ($warnings as $warning) {
@@ -51,10 +51,10 @@ class AutoDeactivateWarning extends Command
             $warning->save();
 
             // Send Private Message
-            $pm = new PrivateMessage();
-            $pm->sender_id = 1;
+            $pm              = new PrivateMessage();
+            $pm->sender_id   = 1;
             $pm->receiver_id = $warning->warneduser->id;
-            $pm->subject = 'Hit and Run Warning Deactivated';
+            $pm->subject     = 'Hit and Run Warning Deactivated';
             if (isset($warning->torrent)) {
                 $pm->message = 'The [b]WARNING[/b] you received relating to Torrent '.$warning->torrenttitle->name.' has expired! Try not to get more! [color=red][b]THIS IS AN AUTOMATED SYSTEM MESSAGE, PLEASE DO NOT REPLY![/b][/color]';
             } else {

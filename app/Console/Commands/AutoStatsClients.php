@@ -17,6 +17,8 @@ use App\Models\Peer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
+use function cache;
+
 class AutoStatsClients extends Command
 {
     /**
@@ -53,7 +55,7 @@ class AutoStatsClients extends Command
             ->toArray();
 
         if (! empty($clients)) {
-            \cache()->put('stats:clients', $clients, Carbon::now()->addMinutes(1440));
+            cache()->put('stats:clients', $clients, Carbon::now()->addMinutes(1440));
         }
 
         $this->comment('Automated Client Stats Completed.');

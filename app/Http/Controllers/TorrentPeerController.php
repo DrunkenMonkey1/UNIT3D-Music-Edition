@@ -16,6 +16,8 @@ namespace App\Http\Controllers;
 use App\Models\Peer;
 use App\Models\Torrent;
 
+use function view;
+
 class TorrentPeerController extends Controller
 {
     /**
@@ -24,15 +26,15 @@ class TorrentPeerController extends Controller
     public function index(int $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $torrent = Torrent::withAnyStatus()->findOrFail($id);
-        $peers = Peer::query()
+        $peers   = Peer::query()
             ->with(['user'])
             ->where('torrent_id', '=', $id)
             ->latest('seeder')
             ->get()
             ->map(function ($peer) use ($torrent) {
-                $progress = 100 * (1 - $peer->left / $torrent->size);
+                $progress         = 100 * (1 - $peer->left / $torrent->size);
                 $peer['progress'] = match (true) {
-                    0 < $progress && $progress < 1    => 1,
+                    0  < $progress  && $progress < 1    => 1,
                     99 < $progress && $progress < 100 => 99,
                     default                           => round($progress),
                 };
@@ -40,6 +42,6 @@ class TorrentPeerController extends Controller
                 return $peer;
             });
 
-        return \view('torrent.peers', ['torrent' => $torrent, 'peers' => $peers]);
+        return view('torrent.peers', ['torrent' => $torrent, 'peers' => $peers]);
     }
 }

@@ -33,6 +33,10 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
+use function cache;
+use function config;
+use function dispatch;
+
 /**
  * @see \Tests\Unit\Console\Commands\AutoSoftDeleteDisabledUsersTest
  */
@@ -59,27 +63,27 @@ class AutoSoftDeleteDisabledUsers extends Command
      */
     public function handle(): void
     {
-        if (\config('pruning.user_pruning')) {
-            $disabledGroup = \cache()->rememberForever('disabled_group', fn () => Group::where('slug', '=', 'disabled')->pluck('id'));
-            $prunedGroup = \cache()->rememberForever('pruned_group', fn () => Group::where('slug', '=', 'pruned')->pluck('id'));
+        if (config('pruning.user_pruning')) {
+            $disabledGroup = cache()->rememberForever('disabled_group', fn () => Group::where('slug', '=', 'disabled')->pluck('id'));
+            $prunedGroup   = cache()->rememberForever('pruned_group', fn () => Group::where('slug', '=', 'pruned')->pluck('id'));
 
             $current = Carbon::now();
-            $users = User::where('group_id', '=', $disabledGroup[0])
-                ->where('disabled_at', '<', $current->copy()->subDays(\config('pruning.soft_delete'))->toDateTimeString())
+            $users   = User::where('group_id', '=', $disabledGroup[0])
+                ->where('disabled_at', '<', $current->copy()->subDays(config('pruning.soft_delete'))->toDateTimeString())
                 ->get();
 
             foreach ($users as $user) {
                 // Send Email
-                \dispatch(new SendDeleteUserMail($user));
+                dispatch(new SendDeleteUserMail($user));
 
-                $user->can_upload = 0;
+                $user->can_upload   = 0;
                 $user->can_download = 0;
-                $user->can_comment = 0;
-                $user->can_invite = 0;
-                $user->can_request = 0;
-                $user->can_chat = 0;
-                $user->group_id = $prunedGroup[0];
-                $user->deleted_by = 1;
+                $user->can_comment  = 0;
+                $user->can_invite   = 0;
+                $user->can_request  = 0;
+                $user->can_chat     = 0;
+                $user->group_id     = $prunedGroup[0];
+                $user->deleted_by   = 1;
                 $user->save();
 
                 // Removes UserID from Torrents if any and replaces with System UserID (1)

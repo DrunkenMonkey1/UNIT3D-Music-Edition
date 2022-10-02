@@ -36,7 +36,7 @@ class ArticleControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $article = Article::factory()->create();
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
 
         $response = $this->actingAs($user)->get(route('articles.show', ['id' => $article->id]));
 

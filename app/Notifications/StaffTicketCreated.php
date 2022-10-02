@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+use function route;
+
 class StaffTicketCreated extends Notification
 {
     use Queueable;
@@ -45,7 +47,7 @@ class StaffTicketCreated extends Notification
         return (new MailMessage())
             ->subject('A ticket was created (Ticket # '.$this->ticket->id.')')
             ->line('A ticket was created.')
-            ->action('View Ticket', \route('tickets.show', ['id' => $this->ticket->id]));
+            ->action('View Ticket', route('tickets.show', ['id' => $this->ticket->id]));
     }
 
     /**

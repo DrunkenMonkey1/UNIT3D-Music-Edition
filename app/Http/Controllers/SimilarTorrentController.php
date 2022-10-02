@@ -17,6 +17,9 @@ use App\Models\Movie;
 use App\Models\Torrent;
 use App\Models\Tv;
 
+use function abort_if;
+use function view;
+
 class SimilarTorrentController extends Controller
 {
     /**
@@ -28,7 +31,7 @@ class SimilarTorrentController extends Controller
             ->where('tmdb', '=', $tmdbId)
             ->first();
 
-        \abort_if(! $torrent || $torrent->count() === 0, 404, 'No Similar Torrents Found');
+        abort_if(! $torrent || $torrent->count() === 0, 404, 'No Similar Torrents Found');
 
         $meta = null;
         if ($torrent->category->tv_meta) {
@@ -39,7 +42,7 @@ class SimilarTorrentController extends Controller
             $meta = Movie::with('genres', 'cast', 'companies', 'collection')->where('id', '=', $tmdbId)->first();
         }
 
-        return \view('torrent.similar', [
+        return view('torrent.similar', [
             'meta'       => $meta,
             'torrent'    => $torrent,
             'categoryId' => $categoryId,

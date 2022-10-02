@@ -17,6 +17,8 @@ use App\Models\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function view;
+
 class CollectionSearch extends Component
 {
     use WithPagination;
@@ -49,7 +51,7 @@ class CollectionSearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.collection-search', [
+        return view('livewire.collection-search', [
             'collections' => $this->collections,
         ]);
     }

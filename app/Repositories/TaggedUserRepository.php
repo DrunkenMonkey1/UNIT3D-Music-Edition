@@ -20,6 +20,13 @@ use App\Models\User;
 use App\Notifications\NewCommentTag;
 use App\Notifications\NewPostTag;
 
+use function preg_match_all;
+use function str_replace;
+use function is_iterable;
+use function is_array;
+use function collect;
+use function is_object;
+
 class TaggedUserRepository
 {
     /**
@@ -40,7 +47,7 @@ class TaggedUserRepository
 
     public function getTags($content): mixed
     {
-        \preg_match_all($this->regex, (string) $content, $tagged);
+        preg_match_all($this->regex, (string) $content, $tagged);
 
         return $tagged[0];
     }
@@ -52,13 +59,13 @@ class TaggedUserRepository
 
     public function contains($haystack, $needle): bool
     {
-        return \collect($this->getTags($haystack))->contains($needle);
+        return collect($this->getTags($haystack))->contains($needle);
     }
 
     public function messageTaggedCommentUsers(string $type, string $content, User $user, $alias, Comment $comment): bool
     {
         foreach ($this->getTags($content) as $tag) {
-            $taggedUser = $this->user->where('username', \str_replace('@', '', $tag))->first();
+            $taggedUser = $this->user->where('username', str_replace('@', '', $tag))->first();
             $this->messageCommentUsers($type, $taggedUser, $user, $alias, $comment);
         }
 
@@ -68,9 +75,9 @@ class TaggedUserRepository
     public function messageCommentUsers($type, $users, $sender, $alias, Comment $comment): bool
     {
         // Array of User objects
-        if (\is_iterable($users)) {
+        if (is_iterable($users)) {
             // we only want unique users from the collection
-            $users = \is_array($users) ? \collect($users)->unique() : $users->unique();
+            $users = is_array($users) ? collect($users)->unique() : $users->unique();
 
             foreach ($users as $user) {
                 if ($this->validate($user) && $user->acceptsNotification($sender, $user, 'mention', 'show_mention_'.$type.'_comment')) {
@@ -93,7 +100,7 @@ class TaggedUserRepository
     public function messageTaggedPostUsers(string $type, string $content, User $user, $alias, Post $post): bool
     {
         foreach ($this->getTags($content) as $tag) {
-            $taggedUser = $this->user->where('username', \str_replace('@', '', $tag))->first();
+            $taggedUser = $this->user->where('username', str_replace('@', '', $tag))->first();
             $this->messagePostUsers($type, $taggedUser, $user, $alias, $post);
         }
 
@@ -103,9 +110,9 @@ class TaggedUserRepository
     public function messagePostUsers($type, $users, $sender, $alias, Post $post): bool
     {
         // Array of User objects
-        if (\is_iterable($users)) {
+        if (is_iterable($users)) {
             // we only want unique users from the collection
-            $users = \is_array($users) ? \collect($users)->unique() : $users->unique();
+            $users = is_array($users) ? collect($users)->unique() : $users->unique();
 
             foreach ($users as $user) {
                 if ($this->validate($user) && $user->acceptsNotification($sender, $user, 'mention', 'show_mention_'.$type.'_post')) {
@@ -136,6 +143,6 @@ class TaggedUserRepository
 
     protected function validate($user): bool
     {
-        return \is_object($user);
+        return is_object($user);
     }
 }

@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use function array_merge;
+
 class Rss extends Model
 {
     use HasFactory;
@@ -78,7 +80,7 @@ class Rss extends Model
         if ($this->json_torrent) {
             $expected = $this->expected_fields;
 
-            return (object) \array_merge($expected, $this->json_torrent);
+            return (object) array_merge($expected, $this->json_torrent);
         }
 
         return false;

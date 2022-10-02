@@ -52,7 +52,7 @@ class CategoryControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $category = Category::factory()->create();
-        $user = $this->createStaffUser();
+        $user     = $this->createStaffUser();
 
         $response = $this->actingAs($user)->delete(route('staff.categories.destroy', ['id' => $category->id]));
 
@@ -66,7 +66,7 @@ class CategoryControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user     = $this->createStaffUser();
         $category = Category::factory()->create();
 
         $response = $this->actingAs($user)->get(route('staff.categories.edit', ['id' => $category->id]));
@@ -99,7 +99,7 @@ class CategoryControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user     = $this->createStaffUser();
         $category = Category::factory()->make();
 
         $response = $this->actingAs($user)->post(route('staff.categories.store'), [
@@ -126,7 +126,7 @@ class CategoryControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $category = Category::factory()->create();
-        $user = $this->createStaffUser();
+        $user     = $this->createStaffUser();
 
         $response = $this->actingAs($user)->patch(route('staff.categories.update', ['id' => $category->id]), [
             'name'       => $category->name,

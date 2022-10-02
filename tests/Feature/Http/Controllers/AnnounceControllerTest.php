@@ -7,6 +7,8 @@ use App\Models\User;
 use Database\Seeders\GroupsTableSeeder;
 use Tests\TestCase;
 
+use function bin2hex;
+
 /**
  * @see \App\Http\Controllers\AnnounceController
  */
@@ -24,10 +26,10 @@ class AnnounceControllerTest extends TestCase
         ]);
 
         $info_hash = '16679042096019090177'; // 20 bytes
-        $peer_id = '19045931013802080695'; // 20 bytes
+        $peer_id   = '19045931013802080695'; // 20 bytes
 
         Torrent::factory()->create([
-            'info_hash' => \bin2hex($info_hash),
+            'info_hash' => bin2hex($info_hash),
             'status'    => 1, // Approved
         ]);
 

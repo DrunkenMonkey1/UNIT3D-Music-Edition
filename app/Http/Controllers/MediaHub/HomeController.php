@@ -22,6 +22,8 @@ use App\Models\Network;
 use App\Models\Person;
 use App\Models\Tv;
 
+use function view;
+
 class HomeController extends Controller
 {
     /**
@@ -29,15 +31,15 @@ class HomeController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $tv = Tv::count();
-        $movies = Movie::count();
+        $tv          = Tv::count();
+        $movies      = Movie::count();
         $collections = Collection::count();
-        $persons = Person::whereNotNull('still')->count();
-        $genres = Genre::count();
-        $networks = Network::count();
-        $companies = Company::count();
+        $persons     = Person::whereNotNull('still')->count();
+        $genres      = Genre::count();
+        $networks    = Network::count();
+        $companies   = Company::count();
 
-        return \view('mediahub.index', [
+        return view('mediahub.index', [
             'tv'          => $tv,
             'movies'      => $movies,
             'collections' => $collections,

@@ -22,6 +22,11 @@ use App\Notifications\NewPostTip;
 use App\Notifications\NewUploadTip;
 use Illuminate\Http\Request;
 
+use function view;
+use function abort_unless;
+use function redirect;
+use function trans;
+
 /**
  * @see \Tests\Feature\Http\Controllers\BonusControllerTest
  */
@@ -34,9 +39,9 @@ class UserTipController extends Controller
     {
         $user = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id === $user->id || $request->user()->group->is_modo, 403);
+        abort_unless($request->user()->id === $user->id || $request->user()->group->is_modo, 403);
 
-        $userbon = $user->getSeedbonus();
+        $userbon         = $user->getSeedbonus();
         $bontransactions = BonTransactions::query()
             ->with(['senderObj', 'receiverObj'])
             ->where(
@@ -58,7 +63,7 @@ class UserTipController extends Controller
             ->where('name', '=', 'tip')
             ->sum('cost');
 
-        return \view('bonus.tips', [
+        return view('bonus.tips', [
             'user'              => $user,
             'bontransactions'   => $bontransactions,
             'userbon'           => $userbon,
@@ -74,7 +79,7 @@ class UserTipController extends Controller
     {
         $sender = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id === $sender->id, 403);
+        abort_unless($request->user()->id === $sender->id, 403);
 
         $request = $request->safe()->collect();
         $tipable = match (true) {
@@ -87,14 +92,14 @@ class UserTipController extends Controller
         $recipient->increment('seedbonus', $tipAmount);
         $sender->decrement('seedbonus', $tipAmount);
 
-        $bonTransactions = new BonTransactions();
-        $bonTransactions->itemID = 0;
-        $bonTransactions->name = 'tip';
-        $bonTransactions->cost = $tipAmount;
-        $bonTransactions->sender = $sender->id;
-        $bonTransactions->receiver = $recipient->id;
-        $bonTransactions->comment = 'tip';
-        $bonTransactions->post_id = $request->has('post') ? $tipable->id : null;
+        $bonTransactions             = new BonTransactions();
+        $bonTransactions->itemID     = 0;
+        $bonTransactions->name       = 'tip';
+        $bonTransactions->cost       = $tipAmount;
+        $bonTransactions->sender     = $sender->id;
+        $bonTransactions->receiver   = $recipient->id;
+        $bonTransactions->comment    = 'tip';
+        $bonTransactions->post_id    = $request->has('post') ? $tipable->id : null;
         $bonTransactions->torrent_id = $request->has('torrent') ? $tipable->id : null;
         $bonTransactions->save();
 
@@ -106,6 +111,6 @@ class UserTipController extends Controller
             $recipient->notify(new NewPostTip('forum', $sender->username, $tipAmount, $tipable));
         }
 
-        return \redirect()->back()->withSuccess(\trans('bon.success-tip'));
+        return redirect()->back()->withSuccess(trans('bon.success-tip'));
     }
 }

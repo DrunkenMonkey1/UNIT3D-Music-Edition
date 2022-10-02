@@ -18,6 +18,9 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function is_array;
+use function auth;
+
 class Forum extends Model
 {
     use HasFactory;
@@ -37,7 +40,7 @@ class Forum extends Model
     public function sub_topics(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         $children = $this->forums->pluck('id')->toArray();
-        if (\is_array($children)) {
+        if (is_array($children)) {
             return $this->hasMany(Topic::class)->orWhereIn('topics.forum_id', $children);
         }
 
@@ -57,9 +60,9 @@ class Forum extends Model
      */
     public function subscription_topics(): \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\HasMany
     {
-        if (\auth()->user() !== null) {
-            $id = $this->id;
-            $subscriptions = \auth()->user()->subscriptions->where('topic_id', '>', '0')->pluck('topic_id')->toArray();
+        if (auth()->user() !== null) {
+            $id            = $this->id;
+            $subscriptions = auth()->user()->subscriptions->where('topic_id', '>', '0')->pluck('topic_id')->toArray();
 
             return $this->hasMany(Topic::class)->where(function ($query) use ($id, $subscriptions) {
                 $query->whereIntegerInRaw('topics.id', [$id])->orWhereIntegerInRaw('topics.id', $subscriptions);
@@ -150,7 +153,7 @@ class Forum extends Model
     public function getPostCount(int $forumId): float|int
     {
         $topics = self::find($forumId)->topics;
-        $count = 0;
+        $count  = 0;
         foreach ($topics as $t) {
             $count += $t->posts()->count();
         }
@@ -173,7 +176,7 @@ class Forum extends Model
      */
     public function getPermission(): object
     {
-        $group = \auth()->check() ? \auth()->user()->group : Group::where('slug', 'guest')->first();
+        $group = auth()->check() ? auth()->user()->group : Group::where('slug', 'guest')->first();
 
         return $group->permissions->where('forum_id', $this->id)->first();
     }

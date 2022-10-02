@@ -42,16 +42,16 @@ class AutoRemovePersonalFreeleech extends Command
      */
     public function handle(): void
     {
-        $current = Carbon::now();
+        $current           = Carbon::now();
         $personalFreeleech = PersonalFreeleech::where('created_at', '<', $current->copy()->subDays(1)->toDateTimeString())->get();
 
         foreach ($personalFreeleech as $pfl) {
             // Send Private Message
-            $pm = new PrivateMessage();
-            $pm->sender_id = 1;
+            $pm              = new PrivateMessage();
+            $pm->sender_id   = 1;
             $pm->receiver_id = $pfl->user_id;
-            $pm->subject = 'Personal 24 Hour Freeleech Expired';
-            $pm->message = 'Your [b]Personal 24 Hour Freeleech[/b] has expired! Feel free to reenable it in the BON Store! [color=red][b]THIS IS AN AUTOMATED SYSTEM MESSAGE, PLEASE DO NOT REPLY![/b][/color]';
+            $pm->subject     = 'Personal 24 Hour Freeleech Expired';
+            $pm->message     = 'Your [b]Personal 24 Hour Freeleech[/b] has expired! Feel free to reenable it in the BON Store! [color=red][b]THIS IS AN AUTOMATED SYSTEM MESSAGE, PLEASE DO NOT REPLY![/b][/color]';
             $pm->save();
 
             // Delete The Record From DB

@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
+use function base_path;
+
 class RouteServiceProvider extends ServiceProvider
 {
     /**
@@ -40,21 +42,21 @@ class RouteServiceProvider extends ServiceProvider
         $this->routes(function () {
             Route::prefix('api')
                 ->middleware(['web', 'auth'])
-                ->group(\base_path('routes/vue.php'));
+                ->group(base_path('routes/vue.php'));
 
             Route::middleware('web')
-                ->group(\base_path('routes/web.php'));
+                ->group(base_path('routes/web.php'));
 
             Route::prefix('api')
                 ->middleware('api')
-                ->group(\base_path('routes/api.php'));
+                ->group(base_path('routes/api.php'));
 
             Route::prefix('announce')
                 ->middleware('announce')
-                ->group(\base_path('routes/announce.php'));
+                ->group(base_path('routes/announce.php'));
 
             Route::middleware('rss')
-                ->group(\base_path('routes/rss.php'));
+                ->group(base_path('routes/rss.php'));
         });
     }
 

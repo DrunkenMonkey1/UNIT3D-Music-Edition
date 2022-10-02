@@ -18,6 +18,10 @@ use App\Models\Resolution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+use function view;
+use function validator;
+use function to_route;
+
 class ResolutionController extends Controller
 {
     /**
@@ -27,7 +31,7 @@ class ResolutionController extends Controller
     {
         $resolutions = Resolution::all()->sortBy('position');
 
-        return \view('Staff.resolution.index', ['resolutions' => $resolutions]);
+        return view('Staff.resolution.index', ['resolutions' => $resolutions]);
     }
 
     /**
@@ -35,7 +39,7 @@ class ResolutionController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.resolution.create');
+        return view('Staff.resolution.create');
     }
 
     /**
@@ -43,25 +47,25 @@ class ResolutionController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $resolution = new Resolution();
-        $resolution->name = $request->input('name');
-        $resolution->slug = Str::slug($resolution->name);
+        $resolution           = new Resolution();
+        $resolution->name     = $request->input('name');
+        $resolution->slug     = Str::slug($resolution->name);
         $resolution->position = $request->input('position');
 
-        $v = \validator($resolution->toArray(), [
+        $v = validator($resolution->toArray(), [
             'name'     => 'required',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.resolutions.index')
+            return to_route('staff.resolutions.index')
                 ->withErrors($v->errors());
         }
 
         $resolution->save();
 
-        return \to_route('staff.resolutions.index')
+        return to_route('staff.resolutions.index')
                 ->withSuccess('Resolution Successfully Added');
     }
 
@@ -72,7 +76,7 @@ class ResolutionController extends Controller
     {
         $resolution = Resolution::findOrFail($id);
 
-        return \view('Staff.resolution.edit', ['resolution' => $resolution]);
+        return view('Staff.resolution.edit', ['resolution' => $resolution]);
     }
 
     /**
@@ -80,25 +84,25 @@ class ResolutionController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $resolution = Resolution::findOrFail($id);
-        $resolution->name = $request->input('name');
-        $resolution->slug = Str::slug($resolution->name);
+        $resolution           = Resolution::findOrFail($id);
+        $resolution->name     = $request->input('name');
+        $resolution->slug     = Str::slug($resolution->name);
         $resolution->position = $request->input('position');
 
-        $v = \validator($resolution->toArray(), [
+        $v = validator($resolution->toArray(), [
             'name'     => 'required',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.resolutions.index')
+            return to_route('staff.resolutions.index')
                 ->withErrors($v->errors());
         }
 
         $resolution->save();
 
-        return \to_route('staff.resolutions.index')
+        return to_route('staff.resolutions.index')
                 ->withSuccess('Resolution Successfully Modified');
     }
 
@@ -112,7 +116,7 @@ class ResolutionController extends Controller
         $resolution = Resolution::findOrFail($id);
         $resolution->delete();
 
-        return \to_route('staff.resolutions.index')
+        return to_route('staff.resolutions.index')
             ->withSuccess('Resolution Successfully Deleted');
     }
 }

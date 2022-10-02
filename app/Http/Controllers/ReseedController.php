@@ -20,6 +20,10 @@ use App\Notifications\NewReseedRequest;
 use App\Repositories\ChatRepository;
 use Illuminate\Http\Request;
 
+use function href_torrent;
+use function sprintf;
+use function to_route;
+
 class ReseedController extends Controller
 {
     /**
@@ -37,7 +41,7 @@ class ReseedController extends Controller
         // TODO: Store reseed requests so can be viewed in a table view.
 
         $torrent = Torrent::findOrFail($id);
-        $reseed = History::where('torrent_id', '=', $torrent->id)->where('active', '=', 0)->get();
+        $reseed  = History::where('torrent_id', '=', $torrent->id)->where('active', '=', 0)->get();
 
         if ($torrent->seeders <= 2) {
             // Send Notification
@@ -45,17 +49,17 @@ class ReseedController extends Controller
                 User::find($r->user_id)->notify(new NewReseedRequest($torrent));
             }
 
-            $torrentUrl = \href_torrent($torrent);
+            $torrentUrl = href_torrent($torrent);
 
             $this->chatRepository->systemMessage(
-                \sprintf('Ladies and Gents, a reseed request was just placed on [url=%s]%s[/url] can you help out :question:', $torrentUrl, $torrent->name)
+                sprintf('Ladies and Gents, a reseed request was just placed on [url=%s]%s[/url] can you help out :question:', $torrentUrl, $torrent->name)
             );
 
-            return \to_route('torrent', ['id' => $torrent->id])
+            return to_route('torrent', ['id' => $torrent->id])
                 ->withSuccess('A notification has been sent to all users that downloaded this torrent along with original uploader!');
         }
 
-        return \to_route('torrent', ['id' => $torrent->id])
+        return to_route('torrent', ['id' => $torrent->id])
             ->withErrors('This torrent doesnt meet the rules for a reseed request.');
     }
 }

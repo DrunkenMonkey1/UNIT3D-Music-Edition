@@ -17,6 +17,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+use function config;
+
 class Contact extends Mailable
 {
     use Queueable;
@@ -35,7 +37,7 @@ class Contact extends Mailable
     public function build(): static
     {
         return $this->markdown('emails.contact')
-            ->from($this->input['email'], \config('other.title'))
+            ->from($this->input['email'], config('other.title'))
             ->subject('New contact mail');
     }
 }

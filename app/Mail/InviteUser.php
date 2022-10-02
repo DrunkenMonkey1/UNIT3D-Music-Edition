@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+use function config;
+
 class InviteUser extends Mailable
 {
     use Queueable;
@@ -36,6 +38,6 @@ class InviteUser extends Mailable
     public function build(): static
     {
         return $this->markdown('emails.invite')
-            ->subject('Invite Received '.\config('other.title'));
+            ->subject('Invite Received '.config('other.title'));
     }
 }

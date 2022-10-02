@@ -20,6 +20,13 @@ use App\Models\Voter;
 use App\Repositories\ChatRepository;
 use Illuminate\Http\Request;
 
+use function href_poll;
+use function href_profile;
+use function sprintf;
+use function to_route;
+use function trans;
+use function view;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\Staff\PollControllerTest
  */
@@ -39,7 +46,7 @@ class PollController extends Controller
     {
         $polls = Poll::latest()->paginate(15);
 
-        return \view('poll.latest', ['polls' => $polls]);
+        return view('poll.latest', ['polls' => $polls]);
     }
 
     /**
@@ -47,16 +54,16 @@ class PollController extends Controller
      */
     public function show(Request $request, int $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
-        $poll = Poll::findOrFail($id);
-        $user = $request->user();
+        $poll         = Poll::findOrFail($id);
+        $user         = $request->user();
         $userHasVoted = $poll->voters->where('user_id', '=', $user->id)->isNotEmpty();
 
         if ($userHasVoted) {
-            return \to_route('poll_results', ['id' => $poll->id])
-                ->withInfo(\trans('poll.already-voted-result'));
+            return to_route('poll_results', ['id' => $poll->id])
+                ->withInfo(trans('poll.already-voted-result'));
         }
 
-        return \view('poll.show', ['poll' => $poll]);
+        return view('poll.show', ['poll' => $poll]);
     }
 
     /**
@@ -64,14 +71,14 @@ class PollController extends Controller
      */
     public function vote(VoteOnPoll $voteOnPoll): \Illuminate\Http\RedirectResponse
     {
-        $user = $voteOnPoll->user();
-        $poll = Option::findOrFail($voteOnPoll->input('option.0'))->poll;
+        $user  = $voteOnPoll->user();
+        $poll  = Option::findOrFail($voteOnPoll->input('option.0'))->poll;
         $voted = Voter::where('user_id', '=', $user->id)
             ->where('poll_id', '=', $poll->id)
             ->exists();
         if ($voted) {
-            return \to_route('poll_results', ['id' => $poll->id])
-                ->withErrors(\trans('poll.already-voted-error'));
+            return to_route('poll_results', ['id' => $poll->id])
+                ->withErrors(trans('poll.already-voted-error'));
         }
 
         // Operate options after validation
@@ -80,20 +87,20 @@ class PollController extends Controller
         }
 
         // Make voter after option operation completed
-        $voter = new Voter();
+        $voter          = new Voter();
         $voter->poll_id = $poll->id;
         $voter->user_id = $user->id;
         $voter->save();
 
-        $pollUrl = \href_poll($poll);
-        $profileUrl = \href_profile($user);
+        $pollUrl    = href_poll($poll);
+        $profileUrl = href_profile($user);
 
         $this->chatRepository->systemMessage(
-            \sprintf('[url=%s]%s[/url] has voted on poll [url=%s]%s[/url]', $profileUrl, $user->username, $pollUrl, $poll->title)
+            sprintf('[url=%s]%s[/url] has voted on poll [url=%s]%s[/url]', $profileUrl, $user->username, $pollUrl, $poll->title)
         );
 
-        return \to_route('poll_results', ['id' => $poll->id])
-            ->withSuccess(\trans('poll.vote-counted'));
+        return to_route('poll_results', ['id' => $poll->id])
+            ->withSuccess(trans('poll.vote-counted'));
     }
 
     /**
@@ -102,11 +109,11 @@ class PollController extends Controller
     public function result(int $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $poll = Poll::findOrFail($id);
-        $map = [
+        $map  = [
             'poll'        => $poll,
             'total_votes' => $poll->totalVotes(),
         ];
 
-        return \view('poll.result', $map);
+        return view('poll.result', $map);
     }
 }

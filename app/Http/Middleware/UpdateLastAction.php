@@ -13,20 +13,20 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
+use function now;
 
 class UpdateLastAction
 {
     /**
      * Handle an incoming request.
      */
-    public function handle(\Illuminate\Http\Request $request, Closure $next): mixed
+    public function handle(\Illuminate\Http\Request $request, \Closure $next): mixed
     {
         if (! $user = $request->user()) {
             return $next($request);
         }
 
-        $user->last_action = \now();
+        $user->last_action = now();
         $user->save();
 
         return $next($request);

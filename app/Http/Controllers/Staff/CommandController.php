@@ -17,6 +17,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
+use function view;
+use function abort_unless;
+use function to_route;
+use function trim;
+use function str_replace;
+
 /**
  * @see \Tests\Feature\Http\Controllers\Staff\CommandControllerTest
  */
@@ -28,9 +34,9 @@ class CommandController extends Controller
     public function index(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
-        return \view('Staff.command.index');
+        return view('Staff.command.index');
     }
 
     /**
@@ -39,12 +45,12 @@ class CommandController extends Controller
     public function maintanceEnable(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('down');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -53,12 +59,12 @@ class CommandController extends Controller
     public function maintanceDisable(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('up');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -67,12 +73,12 @@ class CommandController extends Controller
     public function clearCache(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('cache:clear');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -81,12 +87,12 @@ class CommandController extends Controller
     public function clearView(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('view:clear');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -95,12 +101,12 @@ class CommandController extends Controller
     public function clearRoute(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('route:clear');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -109,12 +115,12 @@ class CommandController extends Controller
     public function clearConfig(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('config:clear');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -123,12 +129,12 @@ class CommandController extends Controller
     public function clearAllCache(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('clear:all_cache');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -137,12 +143,12 @@ class CommandController extends Controller
     public function setAllCache(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('set:all_cache');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(Artisan::output()));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(Artisan::output()));
     }
 
     /**
@@ -151,11 +157,11 @@ class CommandController extends Controller
     public function testEmail(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        \abort_unless($user->group->is_owner, 403);
+        abort_unless($user->group->is_owner, 403);
 
         Artisan::call('test:email');
 
-        return \to_route('staff.commands.index')
-            ->withInfo(\trim(\str_replace(["\r", "\n", '*'], '', Artisan::output())));
+        return to_route('staff.commands.index')
+            ->withInfo(trim(str_replace(["\r", "\n", '*'], '', Artisan::output())));
     }
 }

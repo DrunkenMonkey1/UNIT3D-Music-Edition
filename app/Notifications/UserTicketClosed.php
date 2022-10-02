@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+use function route;
+
 class UserTicketClosed extends Notification
 {
     use Queueable;
@@ -45,7 +47,7 @@ class UserTicketClosed extends Notification
         return (new MailMessage())
                     ->subject('Your ticket was closed (User)')
                     ->line('Your ticket was closed')
-                    ->action('View Ticket', \route('tickets.show', ['id' => $this->ticket->id]));
+                    ->action('View Ticket', route('tickets.show', ['id' => $this->ticket->id]));
     }
 
     /**

@@ -30,6 +30,13 @@ use App\Models\Tv;
 use App\Models\Warning;
 use Livewire\Component;
 
+use function nl2br;
+use function cache;
+use function sprintf;
+use function implode;
+use function view;
+use function auth;
+
 // TODO Fix similar torrent
 class SimilarTorrent extends Component
 {
@@ -59,7 +66,7 @@ class SimilarTorrent extends Component
     final public function selectAll(): void
     {
         $this->selectAll = true;
-        $this->checked = $this->torrents->pluck('id')->map(fn ($item) => (string) $item)->toArray();
+        $this->checked   = $this->torrents->pluck('id')->map(fn ($item) => (string) $item)->toArray();
     }
 
     final public function updatedChecked(): void
@@ -69,7 +76,7 @@ class SimilarTorrent extends Component
 
     final public function isChecked($torrentId): bool
     {
-        return in_array($torrentId, $this->checked);
+        return in_array($torrentId, $this->checked, true);
     }
 
     final public function getTorrentsProperty(): \Illuminate\Support\Collection
@@ -100,35 +107,35 @@ class SimilarTorrent extends Component
     final public function alertConfirm(): void
     {
         $torrents = Torrent::whereKey($this->checked)->pluck('name')->toArray();
-        $names = $torrents;
+        $names    = $torrents;
         $this->dispatchBrowserEvent('swal:confirm', [
             'type'    => 'warning',
             'message' => 'Are you sure?',
-            'body'    => 'If deleted, you will not be able to recover the following files!'.\nl2br("\n")
-                        .\nl2br(\implode("\n", $names)),
+            'body'    => 'If deleted, you will not be able to recover the following files!'.nl2br("\n")
+                        .nl2br(implode("\n", $names)),
         ]);
     }
 
     final public function deleteRecords(): void
     {
         $torrents = Torrent::whereKey($this->checked)->get();
-        $names = [];
-        $users = [];
+        $names    = [];
+        $users    = [];
         $titleids = [];
-        $titles = [];
+        $titles   = [];
         foreach ($torrents as $torrent) {
             $names[] = $torrent->name;
             foreach (History::where('torrent_id', '=', $torrent->id)->get() as $pm) {
-                if (! in_array($pm->user_id, $users)) {
+                if (! in_array($pm->user_id, $users, true)) {
                     $users[] = $pm->user_id;
                 }
             }
 
-            if (! in_array($torrent->tmdb, $titleids)) {
+            if (! in_array($torrent->tmdb, $titleids, true)) {
                 $titleids[] = $torrent->tmdb;
-                $title = null;
-                $cat = $torrent->category;
-                $meta = 'none';
+                $title      = null;
+                $cat        = $torrent->category;
+                $meta       = 'none';
 
                 if ($cat->tv_meta === 1) {
                     $meta = 'tv';
@@ -138,11 +145,11 @@ class SimilarTorrent extends Component
 
                 switch ($meta) {
                     case 'movie':
-                        $title = Movie::find($torrent->tmdb);
+                        $title    = Movie::find($torrent->tmdb);
                         $titles[] = $title->title.' ('.substr($title->release_date, 0, 4).')';
                         break;
                     case 'tv':
-                        $title = Tv::find($torrent->tmdb);
+                        $title    = Tv::find($torrent->tmdb);
                         $titles[] = $title->name.' ('.substr($title->first_air_date, 0, 4).')';
                         break;
                     default:
@@ -154,17 +161,17 @@ class SimilarTorrent extends Component
             $torrentRequest = TorrentRequest::where('filled_hash', '=', $torrent->info_hash)->get();
             foreach ($torrentRequest as $req) {
                 if ($req) {
-                    $req->filled_by = null;
-                    $req->filled_when = null;
-                    $req->filled_hash = null;
-                    $req->approved_by = null;
+                    $req->filled_by     = null;
+                    $req->filled_when   = null;
+                    $req->filled_hash   = null;
+                    $req->approved_by   = null;
                     $req->approved_when = null;
                     $req->save();
                 }
             }
 
             //Remove Torrent related info
-            \cache()->forget(\sprintf('torrent:%s', $torrent->info_hash));
+            cache()->forget(sprintf('torrent:%s', $torrent->info_hash));
             Peer::where('torrent_id', '=', $torrent->id)->delete();
             History::where('torrent_id', '=', $torrent->id)->delete();
             Warning::where('torrent', '=', $torrent->id)->delete();
@@ -180,13 +187,13 @@ class SimilarTorrent extends Component
         }
 
         foreach ($users as $user) {
-            $pmuser = new PrivateMessage();
-            $pmuser->sender_id = 1;
+            $pmuser              = new PrivateMessage();
+            $pmuser->sender_id   = 1;
             $pmuser->receiver_id = $user;
-            $pmuser->subject = 'Bulk Torrents Deleted - '.\implode(', ', $titles).'! ';
-            $pmuser->message = '[b]Attention: [/b] The following torrents have been removed from our site.
+            $pmuser->subject     = 'Bulk Torrents Deleted - '.implode(', ', $titles).'! ';
+            $pmuser->message     = '[b]Attention: [/b] The following torrents have been removed from our site.
             [list]
-                [*]'.\implode(' [*]', $names).'
+                [*]'.implode(' [*]', $names).'
             [/list]
             Our system shows that you were either the uploader, a seeder or a leecher on said torrent. We just wanted to let you know you can safely remove it from your client.
                                     [b]Removal Reason: [/b] '.$this->reason.'
@@ -194,8 +201,8 @@ class SimilarTorrent extends Component
             $pmuser->save();
         }
 
-        $this->checked = [];
-        $this->selectAll = false;
+        $this->checked    = [];
+        $this->selectAll  = false;
         $this->selectPage = false;
 
         $this->dispatchBrowserEvent('swal:modal', [
@@ -220,13 +227,13 @@ class SimilarTorrent extends Component
 
     final public function getPersonalFreeleechProperty()
     {
-        return PersonalFreeleech::where('user_id', '=', \auth()->user()->id)->first();
+        return PersonalFreeleech::where('user_id', '=', auth()->user()->id)->first();
     }
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.similar-torrent', [
-            'user'              => \auth()->user(),
+        return view('livewire.similar-torrent', [
+            'user'              => auth()->user(),
             'torrents'          => $this->torrents,
             'personalFreeleech' => $this->personalFreeleech,
         ]);

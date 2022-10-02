@@ -22,14 +22,17 @@ use App\Models\Wish;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
+use function str_replace;
+use function substr;
+
 trait TorrentFilter
 {
     public function scopeOfName(Builder $query, string $name, bool $isRegex = false): Builder
     {
         return $query->when(
             $isRegex,
-            fn ($query) => $query->where('name', 'REGEXP', \substr($name, 1, -1)),
-            fn ($query) => $query->where('name', 'LIKE', '%'.\str_replace(' ', '%', $name).'%')
+            fn ($query) => $query->where('name', 'REGEXP', substr($name, 1, -1)),
+            fn ($query) => $query->where('name', 'LIKE', '%'.str_replace(' ', '%', $name).'%')
         );
     }
 
@@ -37,7 +40,7 @@ trait TorrentFilter
     {
         return $query->when(
             $isRegex,
-            fn ($query) => $query->where('description', 'REGEXP', \substr($description, 1, -1)),
+            fn ($query) => $query->where('description', 'REGEXP', substr($description, 1, -1)),
             fn ($query) => $query->where('description', 'LIKE', '%'.$description.'%')
         );
     }

@@ -37,7 +37,7 @@ class ChatBotControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $user = $this->createStaffUser();
-        $bot = Bot::factory()->create([
+        $bot  = Bot::factory()->create([
             'is_protected' => false,
         ]);
 
@@ -53,7 +53,7 @@ class ChatBotControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $user = $this->createStaffUser();
-        $bot = Bot::factory()->create();
+        $bot  = Bot::factory()->create();
 
         $response = $this->actingAs($user)->post(route('staff.bots.disable', ['id' => $bot->id]));
         $response->assertRedirect(route('staff.bots.index'));
@@ -67,7 +67,7 @@ class ChatBotControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $user = $this->createStaffUser();
-        $bot = Bot::factory()->create();
+        $bot  = Bot::factory()->create();
 
         $response = $this->actingAs($user)->get(route('staff.bots.edit', ['id' => $bot->id]));
 
@@ -84,7 +84,7 @@ class ChatBotControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $user = $this->createStaffUser();
-        $bot = Bot::factory()->create();
+        $bot  = Bot::factory()->create();
 
         $response = $this->actingAs($user)->post(route('staff.bots.enable', ['id' => $bot->id]));
         $response->assertRedirect(route('staff.bots.index'));
@@ -114,7 +114,7 @@ class ChatBotControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $user = $this->createStaffUser();
-        $bot = Bot::factory()->create();
+        $bot  = Bot::factory()->create();
 
         $response = $this->actingAs($user)->patch(route('staff.bots.update', ['id' => $bot->id]), [
             'position'     => $bot->position,

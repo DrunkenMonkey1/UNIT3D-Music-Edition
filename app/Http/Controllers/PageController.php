@@ -17,6 +17,9 @@ use App\Models\Group;
 use App\Models\Internal;
 use App\Models\Page;
 
+use function config;
+use function view;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\PageControllerTest
  */
@@ -29,7 +32,7 @@ class PageController extends Controller
     {
         $pages = Page::all();
 
-        return \view('page.index', ['pages' => $pages]);
+        return view('page.index', ['pages' => $pages]);
     }
 
     /**
@@ -39,7 +42,7 @@ class PageController extends Controller
     {
         $page = Page::findOrFail($id);
 
-        return \view('page.page', ['page' => $page]);
+        return view('page.page', ['page' => $page]);
     }
 
     /**
@@ -49,7 +52,7 @@ class PageController extends Controller
     {
         $staff = Group::with('users:id,username,group_id,title')->where('is_modo', '=', 1)->orWhere('is_admin', '=', 1)->get()->sortByDesc('position');
 
-        return \view('page.staff', ['staff' => $staff]);
+        return view('page.staff', ['staff' => $staff]);
     }
 
     /**
@@ -59,7 +62,7 @@ class PageController extends Controller
     {
         $internals = Internal::with('users')->get()->sortBy('name');
 
-        return \view('page.internal', ['internals' => $internals]);
+        return view('page.internal', ['internals' => $internals]);
     }
 
     /**
@@ -67,9 +70,9 @@ class PageController extends Controller
      */
     public function blacklist(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $clients = \config('client-blacklist.clients', []);
+        $clients = config('client-blacklist.clients', []);
 
-        return \view('page.blacklist', ['clients' => $clients]);
+        return view('page.blacklist', ['clients' => $clients]);
     }
 
     /**
@@ -77,6 +80,6 @@ class PageController extends Controller
      */
     public function about(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('page.aboutus');
+        return view('page.aboutus');
     }
 }

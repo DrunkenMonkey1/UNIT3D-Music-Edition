@@ -13,11 +13,23 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use Symfony\Component\DomCrawler\Crawler;
+
+use function function_exists;
+use function config;
+use function preg_quote;
+use function max;
+use function strlen;
+use function trim;
+use function collect;
+use function strtoupper;
+use function preg_match;
+use function ltrim;
+use function is_null;
+use function sprintf;
 
 class Http2ServerPush
 {
@@ -37,7 +49,7 @@ class Http2ServerPush
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next, $limit = null, $sizeLimit = null, $excludeKeywords = null): mixed
+    public function handle(Request $request, \Closure $next, $limit = null, $sizeLimit = null, $excludeKeywords = null): mixed
     {
         $response = $next($request);
 
@@ -52,11 +64,11 @@ class Http2ServerPush
 
     public function getConfig($key, $default = false)
     {
-        if (! \function_exists('config')) { // for tests..
+        if (! function_exists('config')) { // for tests..
             return $default;
         }
 
-        return \config('http2serverpush.'.$key, $default);
+        return config('http2serverpush.'.$key, $default);
     }
 
     protected function generateAndAttachLinkHeaders(Response $response, $limit = null, $sizeLimit = null, $excludeKeywords = null): static
@@ -71,20 +83,20 @@ class Http2ServerPush
                     return false;
                 }
 
-                $excludeKeywords = \collect($excludeKeywords)->map(fn ($keyword) => \preg_quote($keyword));
+                $excludeKeywords = collect($excludeKeywords)->map(fn ($keyword) => preg_quote($keyword));
                 if ($excludeKeywords->count() <= 0) {
                     return true;
                 }
 
-                return ! \preg_match('%('.$excludeKeywords->implode('|').')%i', $value);
+                return ! preg_match('%('.$excludeKeywords->implode('|').')%i', $value);
             })
             ->take($limit);
 
-        $sizeLimit ??= \max(1, (int) $this->getConfig('size_limit', 32 * 1_024));
-        $headersText = \trim($headers->implode(','));
-        while (\strlen($headersText) > $sizeLimit) {
+        $sizeLimit ??= max(1, (int) $this->getConfig('size_limit', 32 * 1_024));
+        $headersText = trim($headers->implode(','));
+        while (strlen($headersText) > $sizeLimit) {
             $headers->pop();
-            $headersText = \trim($headers->implode(','));
+            $headersText = trim($headers->implode(','));
         }
 
         if (! empty($headersText)) {
@@ -113,7 +125,7 @@ class Http2ServerPush
     {
         $crawler = $this->getCrawler($response);
 
-        return \collect($crawler->filter('link:not([rel*="icon"]), script[src], img[src], object[data]')->extract(['src', 'href', 'data']));
+        return collect($crawler->filter('link:not([rel*="icon"]), script[src], img[src], object[data]')->extract(['src', 'href', 'data']));
     }
 
     /**
@@ -121,13 +133,13 @@ class Http2ServerPush
      */
     private function buildLinkHeaderString(string $url): ?string
     {
-        $type = \collect(self::LINK_TYPE_MAP)->first(fn ($type, $extension) => Str::contains(\strtoupper($url), $extension));
-        if (! \preg_match('#^https?://#i', $url)) {
+        $type = collect(self::LINK_TYPE_MAP)->first(fn ($type, $extension) => Str::contains(strtoupper($url), $extension));
+        if (! preg_match('#^https?://#i', $url)) {
             $basePath = $this->getConfig('base_path', '/');
-            $url = $basePath.\ltrim($url, $basePath);
+            $url      = $basePath.ltrim($url, $basePath);
         }
 
-        return \is_null($type) ? null : \sprintf('<%s>; rel=preload; as=%s', $url, $type);
+        return is_null($type) ? null : sprintf('<%s>; rel=preload; as=%s', $url, $type);
     }
 
     /**

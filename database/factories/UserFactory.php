@@ -10,6 +10,10 @@ use App\Models\Group;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
+use function bcrypt;
+use function md5;
+use function random_bytes;
+
 class UserFactory extends Factory
 {
     /**
@@ -20,8 +24,8 @@ class UserFactory extends Factory
         return [
             'username'            => $this->faker->unique()->userName(),
             'email'               => $this->faker->unique()->safeEmail(),
-            'password'            => \bcrypt('secret'),
-            'passkey'             => \md5(\random_bytes(60)),
+            'password'            => bcrypt('secret'),
+            'passkey'             => md5(random_bytes(60)),
             'group_id'            => fn () => Group::factory()->create()->id,
             'active'              => true,
             'uploaded'            => $this->faker->randomNumber(),
@@ -34,7 +38,7 @@ class UserFactory extends Factory
             'seedbonus'           => $this->faker->randomFloat(),
             'invites'             => $this->faker->randomNumber(),
             'hitandruns'          => $this->faker->randomNumber(),
-            'rsskey'              => \md5(\random_bytes(60)),
+            'rsskey'              => md5(random_bytes(60)),
             'chatroom_id'         => fn () => Chatroom::factory()->create()->id,
             'censor'              => $this->faker->boolean(),
             'chat_hidden'         => $this->faker->boolean(),

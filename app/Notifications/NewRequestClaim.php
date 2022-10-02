@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
+use function sprintf;
+
 class NewRequestClaim extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -45,7 +47,7 @@ class NewRequestClaim extends Notification implements ShouldQueue
         return [
             'title' => $this->sender.' Has Claimed One Of Your Requested Torrents',
             'body'  => $this->sender.' has claimed your Requested Torrent '.$this->torrentRequest->name,
-            'url'   => \sprintf('/requests/%s', $this->torrentRequest->id),
+            'url'   => sprintf('/requests/%s', $this->torrentRequest->id),
         ];
     }
 }

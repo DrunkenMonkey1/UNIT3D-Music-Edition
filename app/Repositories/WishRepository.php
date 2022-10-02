@@ -18,6 +18,8 @@ use App\Models\Torrent;
 use App\Models\User;
 use App\Models\Wish;
 
+use function route;
+
 class WishRepository implements WishInterface
 {
     /**
@@ -73,7 +75,7 @@ class WishRepository implements WishInterface
                 ->where('status', '=', 1)
                 ->first();
 
-            return \route('torrent', ['id' => $source->id]);
+            return route('torrent', ['id' => $source->id]);
         }
 
         return $this->findById($id)->source ?? null;

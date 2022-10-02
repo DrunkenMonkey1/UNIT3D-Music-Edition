@@ -17,6 +17,9 @@ use App\Models\Like;
 use App\Models\Post;
 use Livewire\Component;
 
+use function auth;
+use function view;
+
 class LikeButton extends Component
 {
     public $post;
@@ -25,7 +28,7 @@ class LikeButton extends Component
 
     final public function mount($post): void
     {
-        $this->user = \auth()->user();
+        $this->user = auth()->user();
         $this->post = Post::findOrFail($post);
     }
 
@@ -44,10 +47,10 @@ class LikeButton extends Component
             return;
         }
 
-        $new = new Like();
+        $new          = new Like();
         $new->user_id = $this->user->id;
         $new->post_id = $this->post->id;
-        $new->like = 1;
+        $new->like    = 1;
         $new->save();
 
         $this->dispatchBrowserEvent('success', ['type' => 'success',  'message' => 'Your Like Was Successfully Applied!']);
@@ -55,6 +58,6 @@ class LikeButton extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.like-button');
+        return view('livewire.like-button');
     }
 }

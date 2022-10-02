@@ -17,6 +17,10 @@ use App\Http\Controllers\Controller;
 use App\Models\BonExchange;
 use Illuminate\Http\Request;
 
+use function view;
+use function validator;
+use function to_route;
+
 class BonExchangeController extends Controller
 {
     /**
@@ -26,7 +30,7 @@ class BonExchangeController extends Controller
     {
         $bonExchanges = BonExchange::all()->sortBy('position');
 
-        return \view('Staff.bon_exchange.index', ['bonExchanges' => $bonExchanges]);
+        return view('Staff.bon_exchange.index', ['bonExchanges' => $bonExchanges]);
     }
 
     /**
@@ -34,7 +38,7 @@ class BonExchangeController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.bon_exchange.create');
+        return view('Staff.bon_exchange.create');
     }
 
     /**
@@ -42,16 +46,16 @@ class BonExchangeController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $bonExchange = new BonExchange();
-        $bonExchange->description = $request->description;
-        $bonExchange->value = $request->value;
-        $bonExchange->cost = $request->cost;
-        $bonExchange->upload = $request->type === 'upload';
-        $bonExchange->download = $request->type === 'download';
+        $bonExchange                     = new BonExchange();
+        $bonExchange->description        = $request->description;
+        $bonExchange->value              = $request->value;
+        $bonExchange->cost               = $request->cost;
+        $bonExchange->upload             = $request->type             === 'upload';
+        $bonExchange->download           = $request->type           === 'download';
         $bonExchange->personal_freeleech = $request->type === 'personal_freeleech';
-        $bonExchange->invite = $request->type === 'invite';
+        $bonExchange->invite             = $request->type             === 'invite';
 
-        $v = \validator($bonExchange->toArray(), [
+        $v = validator($bonExchange->toArray(), [
             'description'        => 'required',
             'value'              => 'required|numeric',
             'cost'               => 'required|numeric',
@@ -62,13 +66,13 @@ class BonExchangeController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.bon_exchanges.create')
+            return to_route('staff.bon_exchanges.create')
                 ->withErrors($v->errors());
         }
 
         $bonExchange->save();
 
-        return \to_route('staff.bon_exchanges.index')
+        return to_route('staff.bon_exchanges.index')
             ->withSuccess('Bon Exchange Successfully Added');
     }
 
@@ -79,7 +83,7 @@ class BonExchangeController extends Controller
     {
         $bonExchange = BonExchange::findOrFail($id);
 
-        return \view('Staff.bon_exchange.edit', ['bonExchange' => $bonExchange]);
+        return view('Staff.bon_exchange.edit', ['bonExchange' => $bonExchange]);
     }
 
     /**
@@ -87,16 +91,16 @@ class BonExchangeController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $bonExchange = BonExchange::findOrFail($id);
-        $bonExchange->description = $request->description;
-        $bonExchange->value = $request->value;
-        $bonExchange->cost = $request->cost;
-        $bonExchange->upload = $request->type === 'upload';
-        $bonExchange->download = $request->type === 'download';
+        $bonExchange                     = BonExchange::findOrFail($id);
+        $bonExchange->description        = $request->description;
+        $bonExchange->value              = $request->value;
+        $bonExchange->cost               = $request->cost;
+        $bonExchange->upload             = $request->type             === 'upload';
+        $bonExchange->download           = $request->type           === 'download';
         $bonExchange->personal_freeleech = $request->type === 'personal_freeleech';
-        $bonExchange->invite = $request->type === 'invite';
+        $bonExchange->invite             = $request->type             === 'invite';
 
-        $v = \validator($bonExchange->toArray(), [
+        $v = validator($bonExchange->toArray(), [
             'description'        => 'required',
             'value'              => 'required|numeric',
             'cost'               => 'required|numeric',
@@ -107,13 +111,13 @@ class BonExchangeController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.bon_exchanges.edit', ['bonExchange' => $id])
+            return to_route('staff.bon_exchanges.edit', ['bonExchange' => $id])
                 ->withErrors($v->errors());
         }
 
         $bonExchange->save();
 
-        return \to_route('staff.bon_exchanges.index')
+        return to_route('staff.bon_exchanges.index')
             ->withSuccess('Bon Exchange Successfully Modified');
     }
 
@@ -127,7 +131,7 @@ class BonExchangeController extends Controller
         $bonExchange = BonExchange::findOrFail($id);
         $bonExchange->delete();
 
-        return \to_route('staff.bon_exchanges.index')
+        return to_route('staff.bon_exchanges.index')
             ->withSuccess('Bon Exchange Successfully Deleted');
     }
 }

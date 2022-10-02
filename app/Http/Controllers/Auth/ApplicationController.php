@@ -20,6 +20,14 @@ use App\Models\ApplicationUrlProof;
 use App\Rules\EmailBlacklist;
 use Illuminate\Http\Request;
 
+use function view;
+use function resolve;
+use function config;
+use function validator;
+use function collect;
+use function to_route;
+use function trans;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\Staff\ApplicationControllerTest
  */
@@ -30,7 +38,7 @@ class ApplicationController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('auth.application.create');
+        return view('auth.application.create');
     }
 
     /**
@@ -38,14 +46,14 @@ class ApplicationController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $application = \resolve(Application::class);
-        $application->type = $request->input('type');
-        $application->email = $request->input('email');
+        $application           = resolve(Application::class);
+        $application->type     = $request->input('type');
+        $application->email    = $request->input('email');
         $application->referrer = $request->input('referrer');
 
-        if (\config('email-blacklist.enabled')) {
-            if (! \config('captcha.enabled')) {
-                $v = \validator($request->all(), [
+        if (config('email-blacklist.enabled')) {
+            if (! config('captcha.enabled')) {
+                $v = validator($request->all(), [
                     'type'     => 'required',
                     'email'    => [
                         'required',
@@ -64,7 +72,7 @@ class ApplicationController extends Controller
                     'links'    => 'min:2',
                 ]);
             } else {
-                $v = \validator($request->all(), [
+                $v = validator($request->all(), [
                     'type'     => 'required',
                     'email'    => [
                         'required',
@@ -84,8 +92,8 @@ class ApplicationController extends Controller
                     'captcha'  => 'hiddencaptcha',
                 ]);
             }
-        } elseif (! \config('captcha.enabled')) {
-            $v = \validator($request->all(), [
+        } elseif (! config('captcha.enabled')) {
+            $v = validator($request->all(), [
                 'type'     => 'required',
                 'email'    => 'required|string|email|max:70|unique:invites|unique:users|unique:applications',
                 'referrer' => 'required',
@@ -95,7 +103,7 @@ class ApplicationController extends Controller
                 'links'    => 'min:2',
             ]);
         } else {
-            $v = \validator($request->all(), [
+            $v = validator($request->all(), [
                 'type'     => 'required',
                 'email'    => 'required|string|email|max:70|unique:invites|unique:users|unique:applications',
                 'referrer' => 'required',
@@ -108,19 +116,19 @@ class ApplicationController extends Controller
         }
 
         if ($v->fails()) {
-            return \to_route('application.create')
+            return to_route('application.create')
                 ->withErrors($v->errors());
         }
 
         $application->save();
         // Map And Save IMG Proofs
-        $imgs = \collect($request->input('images'))->map(fn ($value) => new ApplicationImageProof(['image' => $value]));
+        $imgs = collect($request->input('images'))->map(fn ($value) => new ApplicationImageProof(['image' => $value]));
         $application->imageProofs()->saveMany($imgs);
         // Map And Save URL Proofs
-        $urls = \collect($request->input('links'))->map(fn ($value) => new ApplicationUrlProof(['url' => $value]));
+        $urls = collect($request->input('links'))->map(fn ($value) => new ApplicationUrlProof(['url' => $value]));
         $application->urlProofs()->saveMany($urls);
 
-        return \to_route('login')
-            ->withSuccess(\trans('auth.application-submitted'));
+        return to_route('login')
+            ->withSuccess(trans('auth.application-submitted'));
     }
 }

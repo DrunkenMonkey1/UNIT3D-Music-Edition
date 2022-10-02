@@ -17,6 +17,11 @@ use App\Models\PrivateMessage;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+use function view;
+use function validator;
+use function to_route;
+use function trans;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\PrivateMessageControllerTest
  */
@@ -28,11 +33,11 @@ class PrivateMessageController extends Controller
     public function searchPMInbox(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $user = $request->user();
-        $pms = PrivateMessage::where('receiver_id', '=', $user->id)->where([
+        $pms  = PrivateMessage::where('receiver_id', '=', $user->id)->where([
             ['subject', 'like', '%'.$request->input('subject').'%'],
         ])->latest()->paginate(20);
 
-        return \view('pm.inbox', ['pms' => $pms, 'user' => $user]);
+        return view('pm.inbox', ['pms' => $pms, 'user' => $user]);
     }
 
     /**
@@ -41,11 +46,11 @@ class PrivateMessageController extends Controller
     public function searchPMOutbox(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $user = $request->user();
-        $pms = PrivateMessage::where('sender_id', '=', $user->id)->where([
+        $pms  = PrivateMessage::where('sender_id', '=', $user->id)->where([
             ['subject', 'like', '%'.$request->input('subject').'%'],
         ])->latest()->paginate(20);
 
-        return \view('pm.outbox', ['pms' => $pms, 'user' => $user]);
+        return view('pm.outbox', ['pms' => $pms, 'user' => $user]);
     }
 
     /**
@@ -54,9 +59,9 @@ class PrivateMessageController extends Controller
     public function getPrivateMessages(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $user = $request->user();
-        $pms = PrivateMessage::where('receiver_id', '=', $user->id)->latest()->paginate(25);
+        $pms  = PrivateMessage::where('receiver_id', '=', $user->id)->latest()->paginate(25);
 
-        return \view('pm.inbox', ['pms' => $pms, 'user' => $user]);
+        return view('pm.inbox', ['pms' => $pms, 'user' => $user]);
     }
 
     /**
@@ -65,9 +70,9 @@ class PrivateMessageController extends Controller
     public function getPrivateMessagesSent(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $user = $request->user();
-        $pms = PrivateMessage::where('sender_id', '=', $user->id)->latest()->paginate(20);
+        $pms  = PrivateMessage::where('sender_id', '=', $user->id)->latest()->paginate(20);
 
-        return \view('pm.outbox', ['pms' => $pms, 'user' => $user]);
+        return view('pm.outbox', ['pms' => $pms, 'user' => $user]);
     }
 
     /**
@@ -76,7 +81,7 @@ class PrivateMessageController extends Controller
     public function getPrivateMessageById(Request $request, int $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        $pm = PrivateMessage::findOrFail($id);
+        $pm   = PrivateMessage::findOrFail($id);
 
         if ($pm->sender_id == $user->id || $pm->receiver_id == $user->id) {
             if ($user->id == $pm->receiver_id && $pm->read == 0) {
@@ -84,11 +89,11 @@ class PrivateMessageController extends Controller
                 $pm->save();
             }
 
-            return \view('pm.message', ['pm' => $pm, 'user' => $user]);
+            return view('pm.message', ['pm' => $pm, 'user' => $user]);
         }
 
-        return \to_route('inbox')
-            ->withErrors(\trans('pm.error'));
+        return to_route('inbox')
+            ->withErrors(trans('pm.error'));
     }
 
     /**
@@ -98,7 +103,7 @@ class PrivateMessageController extends Controller
     {
         $user = $request->user();
 
-        return \view('pm.send', ['user' => $user, 'receiver_id' => $receiverId, 'username' => $username]);
+        return view('pm.send', ['user' => $user, 'receiver_id' => $receiverId, 'username' => $username]);
     }
 
     /**
@@ -106,7 +111,7 @@ class PrivateMessageController extends Controller
      */
     public function sendPrivateMessage(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $v = null;
+        $v    = null;
         $user = $request->user();
 
         $dest = 'default';
@@ -117,18 +122,18 @@ class PrivateMessageController extends Controller
         if ($request->has('receiver_id')) {
             $recipient = User::where('username', '=', $request->input('receiver_id'))->firstOrFail();
         } else {
-            return \to_route('create', ['username' => $request->user()->username, 'id' => $request->user()->id])
+            return to_route('create', ['username' => $request->user()->username, 'id' => $request->user()->id])
                 ->withErrors($v->errors());
         }
 
-        $privateMessage = new PrivateMessage();
-        $privateMessage->sender_id = $user->id;
+        $privateMessage              = new PrivateMessage();
+        $privateMessage->sender_id   = $user->id;
         $privateMessage->receiver_id = $recipient->id;
-        $privateMessage->subject = $request->input('subject');
-        $privateMessage->message = $request->input('message');
-        $privateMessage->read = 0;
+        $privateMessage->subject     = $request->input('subject');
+        $privateMessage->message     = $request->input('message');
+        $privateMessage->read        = 0;
 
-        $v = \validator($privateMessage->toArray(), [
+        $v = validator($privateMessage->toArray(), [
             'sender_id'   => 'required',
             'receiver_id' => 'required',
             'subject'     => 'required',
@@ -138,22 +143,22 @@ class PrivateMessageController extends Controller
 
         if ($v->fails()) {
             if ($dest == 'profile') {
-                return \to_route('users.show', ['username' => $recipient->username])
+                return to_route('users.show', ['username' => $recipient->username])
                     ->withErrors($v->errors());
             }
 
-            return \to_route('create', ['username' => $request->user()->username, 'id' => $request->user()->id])
+            return to_route('create', ['username' => $request->user()->username, 'id' => $request->user()->id])
                 ->withErrors($v->errors());
         }
 
         $privateMessage->save();
         if ($dest == 'profile') {
-            return \to_route('users.show', ['username' => $recipient->username])
-                ->withSuccess(\trans('pm.sent-success'));
+            return to_route('users.show', ['username' => $recipient->username])
+                ->withSuccess(trans('pm.sent-success'));
         }
 
-        return \to_route('inbox')
-            ->withSuccess(\trans('pm.sent-success'));
+        return to_route('inbox')
+            ->withSuccess(trans('pm.sent-success'));
     }
 
     /**
@@ -165,15 +170,15 @@ class PrivateMessageController extends Controller
 
         $message = PrivateMessage::where('id', '=', $id)->firstOrFail();
 
-        $privateMessage = new PrivateMessage();
-        $privateMessage->sender_id = $user->id;
+        $privateMessage              = new PrivateMessage();
+        $privateMessage->sender_id   = $user->id;
         $privateMessage->receiver_id = $message->sender_id == $user->id ? $message->receiver_id : $message->sender_id;
-        $privateMessage->subject = $message->subject;
-        $privateMessage->message = $request->input('message');
-        $privateMessage->related_to = $message->id;
-        $privateMessage->read = 0;
+        $privateMessage->subject     = $message->subject;
+        $privateMessage->message     = $request->input('message');
+        $privateMessage->related_to  = $message->id;
+        $privateMessage->read        = 0;
 
-        $v = \validator($privateMessage->toArray(), [
+        $v = validator($privateMessage->toArray(), [
             'sender_id'   => 'required',
             'receiver_id' => 'required',
             'subject'     => 'required',
@@ -183,14 +188,14 @@ class PrivateMessageController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('inbox')
+            return to_route('inbox')
                 ->withErrors($v->errors());
         }
 
         $privateMessage->save();
 
-        return \to_route('inbox')
-            ->withSuccess(\trans('pm.sent-success'));
+        return to_route('inbox')
+            ->withSuccess(trans('pm.sent-success'));
     }
 
     /**
@@ -201,7 +206,7 @@ class PrivateMessageController extends Controller
     public function deletePrivateMessage(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        $pm = PrivateMessage::where('id', '=', $id)->firstOrFail();
+        $pm   = PrivateMessage::where('id', '=', $id)->firstOrFail();
 
         $dest = 'default';
         if ($request->has('dest') && $request->input('dest') == 'outbox') {
@@ -212,15 +217,15 @@ class PrivateMessageController extends Controller
             $pm->delete();
 
             if ($dest == 'outbox') {
-                return \to_route('outbox')->withSuccess(\trans('pm.delete-success'));
+                return to_route('outbox')->withSuccess(trans('pm.delete-success'));
             }
 
-            return \to_route('inbox')
-                ->withSuccess(\trans('pm.delete-success'));
+            return to_route('inbox')
+                ->withSuccess(trans('pm.delete-success'));
         }
 
-        return \to_route('inbox')
-                ->withErrors(\trans('pm.error'));
+        return to_route('inbox')
+                ->withErrors(trans('pm.error'));
     }
 
     /**
@@ -231,8 +236,8 @@ class PrivateMessageController extends Controller
         $user = $request->user();
         PrivateMessage::where('receiver_id', '=', $user->id)->delete();
 
-        return \to_route('inbox')
-                ->withSuccess(\trans('pm.delete-success'));
+        return to_route('inbox')
+                ->withSuccess(trans('pm.delete-success'));
     }
 
     /**
@@ -246,7 +251,7 @@ class PrivateMessageController extends Controller
             $pm->save();
         }
 
-        return \to_route('inbox')
-            ->withSuccess(\trans('pm.all-marked-read'));
+        return to_route('inbox')
+            ->withSuccess(trans('pm.all-marked-read'));
     }
 }

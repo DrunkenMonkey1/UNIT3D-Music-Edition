@@ -19,6 +19,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
+use function view;
+use function uniqid;
+use function public_path;
+use function validator;
+use function to_route;
+
 /**
  * @see \Tests\Feature\Http\Controllers\ArticleControllerTest
  */
@@ -31,7 +37,7 @@ class ArticleController extends Controller
     {
         $articles = Article::latest()->paginate(25);
 
-        return \view('Staff.article.index', ['articles' => $articles]);
+        return view('Staff.article.index', ['articles' => $articles]);
     }
 
     /**
@@ -39,7 +45,7 @@ class ArticleController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.article.create');
+        return view('Staff.article.create');
     }
 
     /**
@@ -47,16 +53,16 @@ class ArticleController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $article = new Article();
-        $article->title = $request->input('title');
-        $article->slug = Str::slug($article->title);
+        $article          = new Article();
+        $article->title   = $request->input('title');
+        $article->slug    = Str::slug($article->title);
         $article->content = $request->input('content');
         $article->user_id = $request->user()->id;
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $filename = 'article-'.\uniqid('', true).'.'.$image->getClientOriginalExtension();
-            $path = \public_path('/files/img/'.$filename);
+            $image    = $request->file('image');
+            $filename = 'article-'.uniqid('', true).'.'.$image->getClientOriginalExtension();
+            $path     = public_path('/files/img/'.$filename);
             Image::make($image->getRealPath())->fit(75, 75)->encode('png', 100)->save($path);
             $article->image = $filename;
         } else {
@@ -64,7 +70,7 @@ class ArticleController extends Controller
             $article->image = null;
         }
 
-        $v = \validator($article->toArray(), [
+        $v = validator($article->toArray(), [
             'title'   => 'required',
             'slug'    => 'required',
             'content' => 'required|min:20',
@@ -72,13 +78,13 @@ class ArticleController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.articles.index')
+            return to_route('staff.articles.index')
                 ->withErrors($v->errors());
         }
 
         $article->save();
 
-        return \to_route('staff.articles.index')
+        return to_route('staff.articles.index')
             ->withSuccess('Your article has successfully published!');
     }
 
@@ -89,7 +95,7 @@ class ArticleController extends Controller
     {
         $article = Article::findOrFail($id);
 
-        return \view('Staff.article.edit', ['article' => $article]);
+        return view('Staff.article.edit', ['article' => $article]);
     }
 
     /**
@@ -97,15 +103,15 @@ class ArticleController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $article = Article::findOrFail($id);
-        $article->title = $request->input('title');
-        $article->slug = Str::slug($article->title);
+        $article          = Article::findOrFail($id);
+        $article->title   = $request->input('title');
+        $article->slug    = Str::slug($article->title);
         $article->content = $request->input('content');
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $filename = 'article-'.\uniqid('', true).'.'.$image->getClientOriginalExtension();
-            $path = \public_path('/files/img/'.$filename);
+            $image    = $request->file('image');
+            $filename = 'article-'.uniqid('', true).'.'.$image->getClientOriginalExtension();
+            $path     = public_path('/files/img/'.$filename);
             Image::make($image->getRealPath())->fit(75, 75)->encode('png', 100)->save($path);
             $article->image = $filename;
         } else {
@@ -113,20 +119,20 @@ class ArticleController extends Controller
             $article->image = null;
         }
 
-        $v = \validator($article->toArray(), [
+        $v = validator($article->toArray(), [
             'title'   => 'required',
             'slug'    => 'required',
             'content' => 'required|min:20',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.articles.index')
+            return to_route('staff.articles.index')
                 ->withErrors($v->errors());
         }
 
         $article->save();
 
-        return \to_route('staff.articles.index')
+        return to_route('staff.articles.index')
             ->withSuccess('Your article changes have successfully published!');
     }
 
@@ -143,7 +149,7 @@ class ArticleController extends Controller
         }
         $article->delete();
 
-        return \to_route('staff.articles.index')
+        return to_route('staff.articles.index')
             ->withSuccess('Article has successfully been deleted');
     }
 }

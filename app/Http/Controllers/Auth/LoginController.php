@@ -18,6 +18,13 @@ use App\Models\Group;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 
+use function cache;
+use function auth;
+use function to_route;
+use function config;
+use function redirect;
+use function trans;
+
 class LoginController extends Controller
 {
     use AuthenticatesUsers;
@@ -52,7 +59,7 @@ class LoginController extends Controller
      */
     protected function validateLogin(Request $request): void
     {
-        if (\config('captcha.enabled')) {
+        if (config('captcha.enabled')) {
             $this->validate($request, [
                 $this->username()      => 'required|string',
                 'password'             => 'required|string',
@@ -68,63 +75,63 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user): \Illuminate\Http\RedirectResponse
     {
-        $bannedGroup = \cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
-        $validatingGroup = \cache()->rememberForever('validating_group', fn () => Group::where('slug', '=', 'validating')->pluck('id'));
-        $disabledGroup = \cache()->rememberForever('disabled_group', fn () => Group::where('slug', '=', 'disabled')->pluck('id'));
-        $memberGroup = \cache()->rememberForever('member_group', fn () => Group::where('slug', '=', 'user')->pluck('id'));
+        $bannedGroup     = cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
+        $validatingGroup = cache()->rememberForever('validating_group', fn () => Group::where('slug', '=', 'validating')->pluck('id'));
+        $disabledGroup   = cache()->rememberForever('disabled_group', fn () => Group::where('slug', '=', 'disabled')->pluck('id'));
+        $memberGroup     = cache()->rememberForever('member_group', fn () => Group::where('slug', '=', 'user')->pluck('id'));
 
         if ($user->active == 0 || $user->group_id == $validatingGroup[0]) {
             $this->guard()->logout();
             $request->session()->invalidate();
 
-            return \to_route('login')
-                ->withErrors(\trans('auth.not-activated'));
+            return to_route('login')
+                ->withErrors(trans('auth.not-activated'));
         }
 
         if ($user->group_id == $bannedGroup[0]) {
             $this->guard()->logout();
             $request->session()->invalidate();
 
-            return \to_route('login')
-                ->withErrors(\trans('auth.banned'));
+            return to_route('login')
+                ->withErrors(trans('auth.banned'));
         }
 
         if ($user->group_id == $disabledGroup[0]) {
-            $user->group_id = $memberGroup[0];
-            $user->can_upload = 1;
+            $user->group_id     = $memberGroup[0];
+            $user->can_upload   = 1;
             $user->can_download = 1;
-            $user->can_comment = 1;
-            $user->can_invite = 1;
-            $user->can_request = 1;
-            $user->can_chat = 1;
-            $user->disabled_at = null;
+            $user->can_comment  = 1;
+            $user->can_invite   = 1;
+            $user->can_request  = 1;
+            $user->can_chat     = 1;
+            $user->disabled_at  = null;
             $user->save();
 
-            return \to_route('home.index')
-                ->withSuccess(\trans('auth.welcome-restore'));
+            return to_route('home.index')
+                ->withSuccess(trans('auth.welcome-restore'));
         }
 
-        if (\auth()->viaRemember() && $user->group_id == $disabledGroup[0]) {
-            $user->group_id = $memberGroup[0];
-            $user->can_upload = 1;
+        if (auth()->viaRemember() && $user->group_id == $disabledGroup[0]) {
+            $user->group_id     = $memberGroup[0];
+            $user->can_upload   = 1;
             $user->can_download = 1;
-            $user->can_comment = 1;
-            $user->can_invite = 1;
-            $user->can_request = 1;
-            $user->can_chat = 1;
-            $user->disabled_at = null;
+            $user->can_comment  = 1;
+            $user->can_invite   = 1;
+            $user->can_request  = 1;
+            $user->can_chat     = 1;
+            $user->disabled_at  = null;
             $user->save();
 
-            return \to_route('home.index')
-                ->withSuccess(\trans('auth.welcome-restore'));
+            return to_route('home.index')
+                ->withSuccess(trans('auth.welcome-restore'));
         }
 
         if ($user->read_rules == 0) {
-            return \redirect()->to(\config('other.rules_url'))
-                ->withWarning(\trans('auth.require-rules'));
+            return redirect()->to(config('other.rules_url'))
+                ->withWarning(trans('auth.require-rules'));
         }
 
-        return \redirect()->intended()
-            ->withSuccess(\trans('auth.welcome'));
+        return redirect()->intended()
+            ->withSuccess(trans('auth.welcome'));
     }
 }

@@ -14,6 +14,7 @@
 namespace App\Http\Controllers;
 
 use function abort;
+use function view;
 
 class TorrentGroupController extends Controller
 {
@@ -23,6 +24,6 @@ class TorrentGroupController extends Controller
     public function index(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
         abort(404);
-        return \view('torrent.group');
+        return view('torrent.group');
     }
 }

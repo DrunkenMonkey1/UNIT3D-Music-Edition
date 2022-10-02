@@ -18,6 +18,9 @@ use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function config;
+use function view;
+
 class UserTorrents extends Component
 {
     use WithPagination;
@@ -133,24 +136,24 @@ class UserTorrents extends Component
                 ->where('name', 'like', '%'.str_replace(' ', '%', $this->name).'%')
             )
             ->when(
-                \config('hitrun.enabled') === true,
+                config('hitrun.enabled') === true,
                 fn ($query) => $query
                 ->when(
                     $this->unsatisfied === 'exclude',
                     fn ($query) => $query
                     ->where(
                         fn ($query) => $query
-                        ->where('seedtime', '>', \config('hitrun.seedtime'))
+                        ->where('seedtime', '>', config('hitrun.seedtime'))
                         ->orWhere('immune', '=', 1)
-                        ->orWhereRaw('actual_downloaded < (torrents.size * ? / 100)', [\config('hitrun.buffer')])
+                        ->orWhereRaw('actual_downloaded < (torrents.size * ? / 100)', [config('hitrun.buffer')])
                     )
                 )
                 ->when(
                     $this->unsatisfied === 'include',
                     fn ($query) => $query
-                    ->where('seedtime', '<', \config('hitrun.seedtime'))
+                    ->where('seedtime', '<', config('hitrun.seedtime'))
                     ->where('immune', '=', 0)
-                    ->whereRaw('actual_downloaded > (torrents.size * ? / 100)', [\config('hitrun.buffer')])
+                    ->whereRaw('actual_downloaded > (torrents.size * ? / 100)', [config('hitrun.buffer')])
                 )
             )
             ->when($this->active === 'include', fn ($query) => $query->where('active', '=', 1))
@@ -174,7 +177,7 @@ class UserTorrents extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.user-torrents', [
+        return view('livewire.user-torrents', [
             'histories' => $this->history,
         ]);
     }

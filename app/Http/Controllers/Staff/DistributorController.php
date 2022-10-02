@@ -19,6 +19,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+use function validator;
+use function view;
+use function to_route;
+
 class DistributorController extends Controller
 {
     /**
@@ -28,7 +32,7 @@ class DistributorController extends Controller
     {
         $distributors = Distributor::all()->sortBy('position');
 
-        return \view('Staff.distributor.index', ['distributors' => $distributors]);
+        return view('Staff.distributor.index', ['distributors' => $distributors]);
     }
 
     /**
@@ -36,7 +40,7 @@ class DistributorController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.distributor.create');
+        return view('Staff.distributor.create');
     }
 
     /**
@@ -44,25 +48,25 @@ class DistributorController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $distributor = new Distributor();
-        $distributor->name = $request->input('name');
-        $distributor->slug = Str::slug($distributor->name);
+        $distributor           = new Distributor();
+        $distributor->name     = $request->input('name');
+        $distributor->slug     = Str::slug($distributor->name);
         $distributor->position = $request->input('position');
 
-        $v = \validator($distributor->toArray(), [
+        $v = validator($distributor->toArray(), [
             'name'     => 'required|unique:distributors,name',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.distributors.index')
+            return to_route('staff.distributors.index')
                 ->withErrors($v->errors());
         }
 
         $distributor->save();
 
-        return \to_route('staff.distributors.index')
+        return to_route('staff.distributors.index')
                 ->withSuccess('Distributor Successfully Added');
     }
 
@@ -73,7 +77,7 @@ class DistributorController extends Controller
     {
         $distributor = Distributor::findOrFail($id);
 
-        return \view('Staff.distributor.edit', ['distributor' => $distributor]);
+        return view('Staff.distributor.edit', ['distributor' => $distributor]);
     }
 
     /**
@@ -81,25 +85,25 @@ class DistributorController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $distributor = Distributor::findOrFail($id);
-        $distributor->name = $request->input('name');
-        $distributor->slug = Str::slug($distributor->name);
+        $distributor           = Distributor::findOrFail($id);
+        $distributor->name     = $request->input('name');
+        $distributor->slug     = Str::slug($distributor->name);
         $distributor->position = $request->input('position');
 
-        $v = \validator($distributor->toArray(), [
+        $v = validator($distributor->toArray(), [
             'name'     => 'required',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.distributors.index')
+            return to_route('staff.distributors.index')
                 ->withErrors($v->errors());
         }
 
         $distributor->save();
 
-        return \to_route('staff.distributors.index')
+        return to_route('staff.distributors.index')
                 ->withSuccess('Distributor Successfully Modified');
     }
 
@@ -109,9 +113,9 @@ class DistributorController extends Controller
     public function delete(int $id): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         $distributors = Distributor::all()->sortBy('position');
-        $distributor = Distributor::findOrFail($id);
+        $distributor  = Distributor::findOrFail($id);
 
-        return \view('Staff.distributor.delete', ['distributors' => $distributors, 'distributor' => $distributor]);
+        return view('Staff.distributor.delete', ['distributors' => $distributors, 'distributor' => $distributor]);
     }
 
     /**
@@ -133,7 +137,7 @@ class DistributorController extends Controller
         $distributor->torrents()->update($validated);
         $distributor->delete();
 
-        return \to_route('staff.distributors.index')
+        return to_route('staff.distributors.index')
             ->withSuccess('Distributor Successfully Deleted');
     }
 }

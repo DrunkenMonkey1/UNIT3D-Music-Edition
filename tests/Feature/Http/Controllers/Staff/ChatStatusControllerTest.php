@@ -36,7 +36,7 @@ class ChatStatusControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user        = $this->createStaffUser();
         $chat_status = ChatStatus::factory()->create();
 
         $response = $this->actingAs($user)->delete(route('staff.statuses.destroy', ['id' => $chat_status->id]));
@@ -66,7 +66,7 @@ class ChatStatusControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user        = $this->createStaffUser();
         $chat_status = ChatStatus::factory()->make();
 
         $response = $this->actingAs($user)->post(route('staff.statuses.store'), [
@@ -85,7 +85,7 @@ class ChatStatusControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user        = $this->createStaffUser();
         $chat_status = ChatStatus::factory()->create();
 
         $response = $this->actingAs($user)->post(route('staff.statuses.update', ['id' => $chat_status->id]), [

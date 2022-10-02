@@ -19,6 +19,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+use function view;
+use function validator;
+use function to_route;
+
 class RegionController extends Controller
 {
     /**
@@ -28,7 +32,7 @@ class RegionController extends Controller
     {
         $regions = Region::all()->sortBy('position');
 
-        return \view('Staff.region.index', ['regions' => $regions]);
+        return view('Staff.region.index', ['regions' => $regions]);
     }
 
     /**
@@ -36,7 +40,7 @@ class RegionController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.region.create');
+        return view('Staff.region.create');
     }
 
     /**
@@ -44,25 +48,25 @@ class RegionController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $region = new Region();
-        $region->name = $request->input('name');
-        $region->slug = Str::slug($region->name);
+        $region           = new Region();
+        $region->name     = $request->input('name');
+        $region->slug     = Str::slug($region->name);
         $region->position = $request->input('position');
 
-        $v = \validator($region->toArray(), [
+        $v = validator($region->toArray(), [
             'name'     => 'required|unique:regions,name',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.regions.index')
+            return to_route('staff.regions.index')
                 ->withErrors($v->errors());
         }
 
         $region->save();
 
-        return \to_route('staff.regions.index')
+        return to_route('staff.regions.index')
                 ->withSuccess('Region Successfully Added');
     }
 
@@ -73,7 +77,7 @@ class RegionController extends Controller
     {
         $region = Region::findOrFail($id);
 
-        return \view('Staff.region.edit', ['region' => $region]);
+        return view('Staff.region.edit', ['region' => $region]);
     }
 
     /**
@@ -81,25 +85,25 @@ class RegionController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $region = Region::findOrFail($id);
-        $region->name = $request->input('name');
-        $region->slug = Str::slug($region->name);
+        $region           = Region::findOrFail($id);
+        $region->name     = $request->input('name');
+        $region->slug     = Str::slug($region->name);
         $region->position = $request->input('position');
 
-        $v = \validator($region->toArray(), [
+        $v = validator($region->toArray(), [
             'name'     => 'required',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.regions.index')
+            return to_route('staff.regions.index')
                 ->withErrors($v->errors());
         }
 
         $region->save();
 
-        return \to_route('staff.regions.index')
+        return to_route('staff.regions.index')
                 ->withSuccess('Region Successfully Modified');
     }
 
@@ -122,7 +126,7 @@ class RegionController extends Controller
         $region->torrents()->update($validated);
         $region->delete();
 
-        return \to_route('staff.regions.index')
+        return to_route('staff.regions.index')
             ->withSuccess('Region Successfully Deleted');
     }
 }

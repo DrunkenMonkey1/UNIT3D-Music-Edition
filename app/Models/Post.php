@@ -20,6 +20,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use voku\helper\AntiXSS;
 
+use function htmlspecialchars;
+use function strip_tags;
+use function strlen;
+use function strrpos;
+use function substr;
+use function floor;
+
 class Post extends Model
 {
     use HasFactory;
@@ -73,7 +80,7 @@ class Post extends Model
      */
     public function setContentAttribute(?string $value): void
     {
-        $this->attributes['content'] = \htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
+        $this->attributes['content'] = htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
     }
 
     /**
@@ -94,17 +101,17 @@ class Post extends Model
         $input = $this->content;
         //strip tags, if desired
         if ($stripHtml) {
-            $input = \strip_tags($input);
+            $input = strip_tags($input);
         }
 
         //no need to trim, already shorter than trim length
-        if (\strlen((string) $input) <= $length) {
+        if (strlen((string) $input) <= $length) {
             return $input;
         }
 
         //find last space within length
-        $lastSpace = \strrpos(\substr($input, 0, $length), ' ');
-        $trimmedText = \substr($input, 0, $lastSpace);
+        $lastSpace   = strrpos(substr($input, 0, $length), ' ');
+        $trimmedText = substr($input, 0, $lastSpace);
 
         //add ellipses (...)
         if ($ellipses) {
@@ -129,6 +136,6 @@ class Post extends Model
     {
         $result = ($this->getPostNumber() - 1) / 25 + 1;
 
-        return \floor($result);
+        return floor($result);
     }
 }

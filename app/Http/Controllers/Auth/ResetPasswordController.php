@@ -19,6 +19,9 @@ use App\Models\UserActivation;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Support\Str;
 
+use function cache;
+use function bcrypt;
+
 class ResetPasswordController extends Controller
 {
     use ResetsPasswords;
@@ -32,9 +35,9 @@ class ResetPasswordController extends Controller
 
     protected function resetPassword($user, $password): void
     {
-        $validatingGroup = \cache()->rememberForever('validating_group', fn () => Group::where('slug', '=', 'validating')->pluck('id'));
-        $memberGroup = \cache()->rememberForever('member_group', fn () => Group::where('slug', '=', 'user')->pluck('id'));
-        $user->password = \bcrypt($password);
+        $validatingGroup      = cache()->rememberForever('validating_group', fn () => Group::where('slug', '=', 'validating')->pluck('id'));
+        $memberGroup          = cache()->rememberForever('member_group', fn () => Group::where('slug', '=', 'user')->pluck('id'));
+        $user->password       = bcrypt($password);
         $user->remember_token = Str::random(60);
 
         if ($user->group_id === $validatingGroup[0]) {

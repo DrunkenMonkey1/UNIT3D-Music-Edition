@@ -17,6 +17,9 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function is_array;
+use function array_key_exists;
+
 class Group extends Model
 {
     use HasFactory;
@@ -67,7 +70,7 @@ class Group extends Model
      */
     public function isAllowed($object, int $groupId): bool
     {
-        if (\is_array($object) && \is_array($object['default_groups']) && \array_key_exists($groupId, $object['default_groups'])) {
+        if (is_array($object) && is_array($object['default_groups']) && array_key_exists($groupId, $object['default_groups'])) {
             return $object['default_groups'][$groupId] == 1;
         }
 

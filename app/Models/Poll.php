@@ -18,6 +18,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+use function strlen;
+use function substr;
+use function sprintf;
+
 class Poll extends Model
 {
     use HasFactory;
@@ -74,10 +78,10 @@ class Poll extends Model
      */
     public function makeSlugFromTitle($title): string
     {
-        $slug = \strlen((string) $title) > 20 ? \substr(Str::slug($title), 0, 20) : Str::slug($title);
+        $slug  = strlen((string) $title) > 20 ? substr(Str::slug($title), 0, 20) : Str::slug($title);
         $count = $this->where('slug', 'LIKE', '%'.$slug.'%')->count();
 
-        return $count ? \sprintf('%s-%s', $slug, $count) : $slug;
+        return $count ? sprintf('%s-%s', $slug, $count) : $slug;
     }
 
     /**

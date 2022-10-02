@@ -16,6 +16,9 @@ namespace App\Helpers;
 use Illuminate\Support\Collection;
 use ZipArchive;
 
+use function consoleOutput;
+use function config;
+
 class BackupPassword
 {
     /**
@@ -33,18 +36,18 @@ class BackupPassword
      */
     public function __construct(string $path)
     {
-        $this->password = \config('backup.security.password');
+        $this->password = config('backup.security.password');
 
         // If no password is set, just return the backup-path
         if (! $this->password) {
             return $this->path = $path;
         }
 
-        \consoleOutput()->info('Applying password and encryption to zip using ZipArchive...');
+        consoleOutput()->info('Applying password and encryption to zip using ZipArchive...');
 
         $this->makeZip($path);
 
-        \consoleOutput()->info('Successfully applied password and encryption to zip.');
+        consoleOutput()->info('Successfully applied password and encryption to zip.');
     }
 
     /**
@@ -52,11 +55,11 @@ class BackupPassword
      */
     protected function makeZip(string $path): void
     {
-        $encryption = \config('backup.security.encryption');
+        $encryption = config('backup.security.encryption');
 
-        $zipArchive = new ZipArchive();
+        $zipArchive = new \ZipArchive();
 
-        $zipArchive->open($path, ZipArchive::OVERWRITE);
+        $zipArchive->open($path, \ZipArchive::OVERWRITE);
         $zipArchive->addFile($path, 'backup.zip');
         $zipArchive->setPassword($this->password);
         Collection::times($zipArchive->numFiles, fn ($i) => $zipArchive->setEncryptionIndex($i - 1, $encryption));

@@ -50,7 +50,7 @@ class GroupControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user  = $this->createStaffUser();
         $group = Group::factory()->create();
 
         $response = $this->actingAs($user)->get(route('staff.groups.edit', ['id' => $group->id]));
@@ -83,7 +83,7 @@ class GroupControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user  = $this->createStaffUser();
         $group = Group::factory()->make();
 
         $response = $this->actingAs($user)->post(route('staff.groups.store'), [
@@ -117,7 +117,7 @@ class GroupControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user  = $this->createStaffUser();
         $group = Group::factory()->create();
 
         $response = $this->actingAs($user)->post(route('staff.groups.update', ['id' => $group->id]), [

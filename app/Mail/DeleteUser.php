@@ -17,6 +17,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+use function config;
+
 class DeleteUser extends Mailable
 {
     use Queueable;
@@ -35,6 +37,6 @@ class DeleteUser extends Mailable
     public function build(): static
     {
         return $this->markdown('emails.pruned')
-            ->subject('Your Account Has Been Pruned - '.\config('other.title'));
+            ->subject('Your Account Has Been Pruned - '.config('other.title'));
     }
 }

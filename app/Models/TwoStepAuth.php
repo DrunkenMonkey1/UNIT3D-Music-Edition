@@ -17,6 +17,8 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function array_merge;
+
 class TwoStepAuth extends Model
 {
     use HasFactory;
@@ -83,7 +85,7 @@ class TwoStepAuth extends Model
      */
     public static function rules(array $merge = []): array
     {
-        return \array_merge(
+        return array_merge(
             [
                 'userId'     => 'required|integer',
                 'authCode'   => 'required|string|max:4|min:4',

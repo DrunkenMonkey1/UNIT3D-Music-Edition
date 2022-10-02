@@ -51,7 +51,7 @@ class ArticleControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user    = $this->createStaffUser();
         $article = Article::factory()->create();
 
         $response = $this->actingAs($user)->delete(route('staff.articles.destroy', ['id' => $article->id]));
@@ -65,7 +65,7 @@ class ArticleControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user    = $this->createStaffUser();
         $article = Article::factory()->create();
 
         $response = $this->actingAs($user)->get(route('staff.articles.edit', ['id' => $article->id]));
@@ -98,7 +98,7 @@ class ArticleControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user    = $this->createStaffUser();
         $article = Article::factory()->make();
 
         $response = $this->actingAs($user)->post(route('staff.articles.store'), [
@@ -118,7 +118,7 @@ class ArticleControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user    = $this->createStaffUser();
         $article = Article::factory()->create();
 
         $response = $this->actingAs($user)->post(route('staff.articles.update', ['id' => $article->id]), [

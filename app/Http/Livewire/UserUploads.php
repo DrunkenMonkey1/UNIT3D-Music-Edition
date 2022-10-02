@@ -18,6 +18,8 @@ use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function view;
+
 class UserUploads extends Component
 {
     use WithPagination;
@@ -89,7 +91,7 @@ class UserUploads extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.user-uploads', [
+        return view('livewire.user-uploads', [
             'uploads' => $this->uploads,
         ]);
     }

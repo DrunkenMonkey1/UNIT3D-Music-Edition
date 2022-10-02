@@ -51,7 +51,7 @@ class MassActionControllerTest extends TestCase
     {
         $this->seed(GroupsTableSeeder::class);
 
-        $user = $this->createStaffUser();
+        $user    = $this->createStaffUser();
         $message = PrivateMessage::factory()->create();
 
         $response = $this->actingAs($user)->post(route('staff.mass-pm.store'), [

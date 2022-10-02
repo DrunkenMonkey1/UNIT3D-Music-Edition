@@ -16,6 +16,8 @@ namespace App\Console\Commands;
 use App\Helpers\EmailBlacklistUpdater;
 use Illuminate\Console\Command;
 
+use function sprintf;
+
 class EmailBlacklistUpdate extends Command
 {
     /**
@@ -51,6 +53,6 @@ class EmailBlacklistUpdate extends Command
             return;
         }
 
-        $this->info(\sprintf('%s domains retrieved. Cache updated. You are good to go.', $count));
+        $this->info(sprintf('%s domains retrieved. Cache updated. You are good to go.', $count));
     }
 }

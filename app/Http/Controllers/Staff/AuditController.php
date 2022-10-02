@@ -17,6 +17,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Audit;
 use Illuminate\Http\Request;
 
+use function view;
+use function abort_unless;
+use function to_route;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\Staff\AuditControllerTest
  */
@@ -33,7 +37,7 @@ class AuditController extends Controller
             $audit->values = json_decode($audit->record, true, 512, JSON_THROW_ON_ERROR);
         }
 
-        return \view('Staff.audit.index', ['audits' => $audits]);
+        return view('Staff.audit.index', ['audits' => $audits]);
     }
 
     /**
@@ -43,13 +47,13 @@ class AuditController extends Controller
      */
     public function destroy(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $user = $request->user();
+        $user  = $request->user();
         $audit = Audit::findOrFail($id);
 
-        \abort_unless($user->group->is_modo, 403);
+        abort_unless($user->group->is_modo, 403);
         $audit->delete();
 
-        return \to_route('staff.audits.index')
+        return to_route('staff.audits.index')
             ->withSuccess('Audit Record Has Successfully Been Deleted');
     }
 }

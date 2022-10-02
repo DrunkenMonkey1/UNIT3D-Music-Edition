@@ -19,6 +19,10 @@ use App\Models\TorrentRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+use function validator;
+use function to_route;
+use function trans;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\ReportControllerTest
  */
@@ -37,15 +41,15 @@ class ReportController extends Controller
     public function request(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $torrentRequest = TorrentRequest::findOrFail($id);
-        $reportedBy = $request->user();
-        $reportedUser = $torrentRequest->user;
+        $reportedBy     = $request->user();
+        $reportedUser   = $torrentRequest->user;
 
-        $v = \validator($request->all(), [
+        $v = validator($request->all(), [
             'message' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('request', ['id' => $id])
+            return to_route('request', ['id' => $id])
                 ->withErrors($v->errors());
         }
 
@@ -60,8 +64,8 @@ class ReportController extends Controller
             'solved'        => 0,
         ]);
 
-        return \to_route('request', ['id' => $id])
-            ->withSuccess(\trans('user.report-sent'));
+        return to_route('request', ['id' => $id])
+            ->withSuccess(trans('user.report-sent'));
     }
 
     /**
@@ -69,16 +73,16 @@ class ReportController extends Controller
      */
     public function torrent(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $torrent = Torrent::findOrFail($id);
-        $reportedBy = $request->user();
+        $torrent      = Torrent::findOrFail($id);
+        $reportedBy   = $request->user();
         $reportedUser = $torrent->user;
 
-        $v = \validator($request->all(), [
+        $v = validator($request->all(), [
             'message' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('torrent', ['id' => $id])
+            return to_route('torrent', ['id' => $id])
                 ->withErrors($v->errors());
         }
 
@@ -93,8 +97,8 @@ class ReportController extends Controller
             'solved'        => 0,
         ]);
 
-        return \to_route('torrent', ['id' => $id])
-            ->withSuccess(\trans('user.report-sent'));
+        return to_route('torrent', ['id' => $id])
+            ->withSuccess(trans('user.report-sent'));
     }
 
     /**
@@ -103,14 +107,14 @@ class ReportController extends Controller
     public function user(Request $request, string $username): \Illuminate\Http\RedirectResponse
     {
         $reportedUser = User::where('username', '=', $username)->firstOrFail();
-        $reportedBy = $request->user();
+        $reportedBy   = $request->user();
 
-        $v = \validator($request->all(), [
+        $v = validator($request->all(), [
             'message' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('users.show', ['username' => $username])
+            return to_route('users.show', ['username' => $username])
                 ->withErrors($v->errors());
         }
 
@@ -125,7 +129,7 @@ class ReportController extends Controller
             'solved'        => 0,
         ]);
 
-        return \to_route('users.show', ['username' => $username])
-            ->withSuccess(\trans('user.report-sent'));
+        return to_route('users.show', ['username' => $username])
+            ->withSuccess(trans('user.report-sent'));
     }
 }

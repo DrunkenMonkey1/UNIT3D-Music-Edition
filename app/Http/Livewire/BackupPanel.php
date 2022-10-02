@@ -107,7 +107,7 @@ class BackupPanel extends Component
 
     final public function deleteFile(): void
     {
-        $deletingFile = $this->deletingFile;
+        $deletingFile       = $this->deletingFile;
         $this->deletingFile = null;
 
         $this->emitSelf('hideDeleteModal');
@@ -124,8 +124,8 @@ class BackupPanel extends Component
 
         $this->files = collect($this->files)
             ->reject(fn ($file) => $file['path'] === $deletingFile['path']
-                && $file['date'] === $deletingFile['date']
-                && $file['size'] === $deletingFile['size'])
+                && $file['date']                 === $deletingFile['date']
+                && $file['size']                 === $deletingFile['size'])
             ->values()
             ->all();
     }
@@ -152,7 +152,7 @@ class BackupPanel extends Component
     final public function respondWithBackupStream(Backup $backup): StreamedResponse
     {
         $fileName = pathinfo($backup->path(), PATHINFO_BASENAME);
-        $size = method_exists($backup, 'sizeInBytes') ? $backup->sizeInBytes() : $backup->size();
+        $size     = method_exists($backup, 'sizeInBytes') ? $backup->sizeInBytes() : $backup->size();
 
         $downloadHeaders = [
             'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',

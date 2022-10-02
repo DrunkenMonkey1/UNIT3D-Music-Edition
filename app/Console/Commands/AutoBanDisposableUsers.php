@@ -22,6 +22,11 @@ use App\Rules\EmailBlacklist;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
+use function cache;
+use function validator;
+use function substr;
+use function strrchr;
+
 /**
  * @see \Tests\Todo\Unit\Console\Commands\AutoBanDisposableUsersTest
  */
@@ -48,11 +53,11 @@ class AutoBanDisposableUsers extends Command
      */
     public function handle(): void
     {
-        $bannedGroup = \cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
+        $bannedGroup = cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
 
         User::where('group_id', '!=', $bannedGroup[0])->chunkById(100, function ($users) use ($bannedGroup) {
             foreach ($users as $user) {
-                $v = \validator([
+                $v = validator([
                     'email' => $user->email,
                 ], [
                     'email' => [
@@ -66,21 +71,21 @@ class AutoBanDisposableUsers extends Command
 
                 if ($v->fails()) {
                     // If User Is Using A Disposable Email Set The Users Group To Banned
-                    $user->group_id = $bannedGroup[0];
-                    $user->can_upload = 0;
+                    $user->group_id     = $bannedGroup[0];
+                    $user->can_upload   = 0;
                     $user->can_download = 0;
-                    $user->can_comment = 0;
-                    $user->can_invite = 0;
-                    $user->can_request = 0;
-                    $user->can_chat = 0;
+                    $user->can_comment  = 0;
+                    $user->can_invite   = 0;
+                    $user->can_request  = 0;
+                    $user->can_chat     = 0;
                     $user->save();
 
                     // Log The Ban To Ban Log
-                    $domain = \substr(\strrchr($user->email, '@'), 1);
-                    $logban = new Ban();
-                    $logban->owned_by = $user->id;
-                    $logban->created_by = 1;
-                    $logban->ban_reason = 'Detected disposable email, '.$domain.' not allowed.';
+                    $domain               = substr(strrchr($user->email, '@'), 1);
+                    $logban               = new Ban();
+                    $logban->owned_by     = $user->id;
+                    $logban->created_by   = 1;
+                    $logban->ban_reason   = 'Detected disposable email, '.$domain.' not allowed.';
                     $logban->unban_reason = '';
                     $logban->save();
 

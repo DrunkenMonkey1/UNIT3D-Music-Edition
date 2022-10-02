@@ -7,6 +7,8 @@ use App\Models\Person;
 use App\Models\Tv;
 use Livewire\Component;
 
+use function view;
+
 class QuickSearchDropdown extends Component
 {
     public string $quicksearchRadio = 'movies';
@@ -16,7 +18,7 @@ class QuickSearchDropdown extends Component
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         // TODO implement quick search for music
-        $search = '%'.str_replace(' ', '%', $this->quicksearchText).'%';
+        $search         = '%'.str_replace(' ', '%', $this->quicksearchText).'%';
         $search_results = match ($this->quicksearchRadio) {
 //            'movies' => Movie::query()
 //                ->select(['id', 'poster', 'title', 'release_date'])
@@ -44,7 +46,7 @@ class QuickSearchDropdown extends Component
             default  => [],
         };
 
-        return \view('livewire.quick-search-dropdown', [
+        return view('livewire.quick-search-dropdown', [
             'search_results' => $search_results,
         ]);
     }

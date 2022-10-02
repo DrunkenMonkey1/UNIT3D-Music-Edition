@@ -17,6 +17,9 @@ use App\Models\Thank;
 use App\Models\Torrent;
 use Livewire\Component;
 
+use function auth;
+use function view;
+
 class ThankButton extends Component
 {
     public $torrent;
@@ -25,7 +28,7 @@ class ThankButton extends Component
 
     final public function mount($torrent): void
     {
-        $this->user = \auth()->user();
+        $this->user    = auth()->user();
         $this->torrent = Torrent::withAnyStatus()->findOrFail($torrent);
     }
 
@@ -44,8 +47,8 @@ class ThankButton extends Component
             return;
         }
 
-        $thank = new Thank();
-        $thank->user_id = $this->user->id;
+        $thank             = new Thank();
+        $thank->user_id    = $this->user->id;
         $thank->torrent_id = $this->torrent->id;
         $thank->save();
 
@@ -59,6 +62,6 @@ class ThankButton extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.thank-button');
+        return view('livewire.thank-button');
     }
 }

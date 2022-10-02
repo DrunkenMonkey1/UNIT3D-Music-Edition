@@ -18,6 +18,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
+use function sprintf;
+
 class NewRequestUnclaim extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -45,7 +47,7 @@ class NewRequestUnclaim extends Notification implements ShouldQueue
         return [
             'title' => $this->sender.' Has Unclaimed One Of Your Requested Torrents',
             'body'  => $this->sender.' has unclaimed your Requested Torrent '.$this->torrentRequest->name,
-            'url'   => \sprintf('/requests/%s', $this->torrentRequest->id),
+            'url'   => sprintf('/requests/%s', $this->torrentRequest->id),
         ];
     }
 }

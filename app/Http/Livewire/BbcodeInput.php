@@ -16,6 +16,8 @@ namespace App\Http\Livewire;
 use App\Helpers\Bbcode;
 use Livewire\Component;
 
+use function view;
+
 class BbcodeInput extends Component
 {
     public string $label = '';
@@ -32,9 +34,9 @@ class BbcodeInput extends Component
 
     final public function mount($name, $label, $required = false, $content = null)
     {
-        $this->name = $name;
-        $this->label = $label;
-        $this->isRequired = $required;
+        $this->name          = $name;
+        $this->label         = $label;
+        $this->isRequired    = $required;
         $this->contentBbcode = $content ?? old($name) ?? '';
     }
 
@@ -47,7 +49,7 @@ class BbcodeInput extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.bbcode-input', [
+        return view('livewire.bbcode-input', [
             'contentHtml' => $this->contentHtml,
             'label'       => $this->label,
         ]);

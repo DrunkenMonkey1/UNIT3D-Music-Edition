@@ -9,6 +9,10 @@ use App\Models\Type;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+use function random_int;
+use function count;
+use function now;
+
 class TorrentFactory extends Factory
 {
     /**
@@ -17,7 +21,7 @@ class TorrentFactory extends Factory
     public function definition(): array
     {
         $freeleech = ['0', '25', '50', '75', '100'];
-        $selected = \random_int(0, \count($freeleech) - 1);
+        $selected  = random_int(0, count($freeleech) - 1);
 
         return [
             'name'               => $this->faker->name(),
@@ -41,7 +45,7 @@ class TorrentFactory extends Factory
             'highspeed'          => $this->faker->boolean(),
             'featured'           => false,
             'status'             => 1,
-            'moderated_at'       => \now(),
+            'moderated_at'       => now(),
             'moderated_by'       => 1,
             'anon'               => $this->faker->boolean(),
             'sticky'             => $this->faker->boolean(),

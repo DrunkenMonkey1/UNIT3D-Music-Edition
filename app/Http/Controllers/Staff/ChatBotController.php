@@ -18,6 +18,10 @@ use App\Models\Bot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+use function view;
+use function validator;
+use function to_route;
+
 /**
  * @see \Tests\Feature\Http\Controllers\Staff\ChatBotControllerTest
  */
@@ -30,7 +34,7 @@ class ChatBotController extends Controller
     {
         $bots = Bot::oldest('position')->get();
 
-        return \view('Staff.chat.bot.index', [
+        return view('Staff.chat.bot.index', [
             'bots' => $bots,
         ]);
     }
@@ -41,9 +45,9 @@ class ChatBotController extends Controller
     public function edit(Request $request, int $id): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         $user = $request->user();
-        $bot = Bot::findOrFail($id);
+        $bot  = Bot::findOrFail($id);
 
-        return \view('Staff.chat.bot.edit', [
+        return view('Staff.chat.bot.edit', [
             'user'           => $user,
             'bot'            => $bot,
         ]);
@@ -55,10 +59,10 @@ class ChatBotController extends Controller
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
-        $bot = Bot::findOrFail($id);
+        $bot  = Bot::findOrFail($id);
 
         if ($request->has('command') && $request->input('command') == $bot->command) {
-            $v = \validator($request->all(), [
+            $v = validator($request->all(), [
                 'name'     => 'required|min:3|max:255',
                 'command'  => 'required|alpha_dash|min:3|max:255',
                 'position' => 'required',
@@ -70,7 +74,7 @@ class ChatBotController extends Controller
                 'about'    => 'sometimes|max:9999',
             ]);
         } else {
-            $v = \validator($request->all(), [
+            $v = validator($request->all(), [
                 'name'     => 'required|min:3|max:255',
                 'command'  => 'required|alpha_dash|min:3|max:255|unique:bots',
                 'position' => 'required',
@@ -83,21 +87,21 @@ class ChatBotController extends Controller
             ]);
         }
 
-        $error = null;
-        $success = null;
+        $error    = null;
+        $success  = null;
         $redirect = null;
 
         if ($v->passes()) {
-            $bot->name = $request->input('name');
-            $bot->slug = Str::slug($request->input('name'));
+            $bot->name     = $request->input('name');
+            $bot->slug     = Str::slug($request->input('name'));
             $bot->position = $request->input('position');
-            $bot->color = $request->input('color');
-            $bot->icon = $request->input('icon');
-            $bot->emoji = $request->input('emoji');
-            $bot->about = $request->input('about');
-            $bot->info = $request->input('info');
-            $bot->help = $request->input('help');
-            $bot->command = $request->input('command');
+            $bot->color    = $request->input('color');
+            $bot->icon     = $request->input('icon');
+            $bot->emoji    = $request->input('emoji');
+            $bot->about    = $request->input('about');
+            $bot->info     = $request->input('info');
+            $bot->help     = $request->input('help');
+            $bot->command  = $request->input('command');
             $bot->save();
             $success = 'The Bot Has Been Updated';
         }
@@ -108,11 +112,11 @@ class ChatBotController extends Controller
                 $error = $v->errors();
             }
 
-            return \to_route('staff.bots.edit', ['id' => $id])
+            return to_route('staff.bots.edit', ['id' => $id])
                 ->withErrors($error);
         }
 
-        return \to_route('staff.bots.edit', ['id' => $id])
+        return to_route('staff.bots.edit', ['id' => $id])
             ->withSuccess($success);
     }
 
@@ -126,7 +130,7 @@ class ChatBotController extends Controller
         $bot = Bot::where('is_protected', '=', 0)->findOrFail($id);
         $bot->delete();
 
-        return \to_route('staff.bots.index')
+        return to_route('staff.bots.index')
             ->withSuccess('The Humans Vs Machines War Has Begun! Humans: 1 and Bots: 0');
     }
 
@@ -135,11 +139,11 @@ class ChatBotController extends Controller
      */
     public function disable(int $id): \Illuminate\Http\RedirectResponse
     {
-        $bot = Bot::findOrFail($id);
+        $bot         = Bot::findOrFail($id);
         $bot->active = 0;
         $bot->save();
 
-        return \to_route('staff.bots.index')
+        return to_route('staff.bots.index')
             ->withSuccess('The Bot Has Been Disabled');
     }
 
@@ -148,11 +152,11 @@ class ChatBotController extends Controller
      */
     public function enable(int $id): \Illuminate\Http\RedirectResponse
     {
-        $bot = Bot::findOrFail($id);
+        $bot         = Bot::findOrFail($id);
         $bot->active = 1;
         $bot->save();
 
-        return \to_route('staff.bots.index')
+        return to_route('staff.bots.index')
             ->withSuccess('The Bot Has Been Enabled');
     }
 }

@@ -14,8 +14,27 @@
 
 namespace App\Helpers;
 
-use DOMDocument;
-use DOMElement;
+use function array_unshift;
+use function preg_replace;
+use function explode;
+use function min;
+use function strtolower;
+use function preg_match;
+use function strlen;
+use function preg_quote;
+use function trim;
+use function uasort;
+use function range;
+use function sprintf;
+use function count;
+use function array_merge;
+use function preg_split;
+use function substr;
+use function implode;
+use function libxml_use_internal_errors;
+use function mb_convert_encoding;
+use function in_array;
+use function str_replace;
 
 class MarkdownExtra extends Markdown
 {
@@ -25,10 +44,10 @@ class MarkdownExtra extends Markdown
         $this->BlockTypes['*'][] = 'Abbreviation';
 
         // identify footnote definitions before reference definitions
-        \array_unshift($this->BlockTypes['['], 'Footnote');
+        array_unshift($this->BlockTypes['['], 'Footnote');
 
         // identify footnote markers before before links
-        \array_unshift($this->InlineTypes['['], 'FootnoteMarker');
+        array_unshift($this->InlineTypes['['], 'FootnoteMarker');
     }
 
     public function text($text)
@@ -39,11 +58,11 @@ class MarkdownExtra extends Markdown
         $markup = $this->elements($Elements);
 
         // trim line breaks
-        $markup = \trim($markup, "\n");
+        $markup = trim($markup, "\n");
 
         // merge consecutive dl elements
 
-        $markup = \preg_replace('#<\/dl>\s+<dl>\s+#', '', $markup);
+        $markup = preg_replace('#<\/dl>\s+<dl>\s+#', '', $markup);
 
         // add footnotes
 
@@ -65,7 +84,7 @@ class MarkdownExtra extends Markdown
 
     protected function blockAbbreviation($Line)
     {
-        if (\preg_match('#^\*\[(.+?)\]:[ ]*(.+?)[ ]*$#', (string) $Line['text'], $matches)) {
+        if (preg_match('#^\*\[(.+?)\]:[ ]*(.+?)[ ]*$#', (string) $Line['text'], $matches)) {
             $this->DefinitionData['Abbreviation'][$matches[1]] = $matches[2];
 
             return [
@@ -79,7 +98,7 @@ class MarkdownExtra extends Markdown
 
     protected function blockFootnote($Line)
     {
-        if (\preg_match('#^\[\^(.+?)\]:[ ]?(.*)$#', (string) $Line['text'], $matches)) {
+        if (preg_match('#^\[\^(.+?)\]:[ ]?(.*)$#', (string) $Line['text'], $matches)) {
             return [
                 'label'  => $matches[1],
                 'text'   => $matches[2],
@@ -90,7 +109,7 @@ class MarkdownExtra extends Markdown
 
     protected function blockFootnoteContinue($Line, $Block)
     {
-        if ($Line['text'][0] === '[' && \preg_match('#^\[\^(.+?)\]:#', (string) $Line['text'])) {
+        if ($Line['text'][0] === '[' && preg_match('#^\[\^(.+?)\]:#', (string) $Line['text'])) {
             return;
         }
 
@@ -132,7 +151,7 @@ class MarkdownExtra extends Markdown
             'elements' => [],
         ];
 
-        $terms = \explode("\n", (string) $Block['element']['handler']['argument']);
+        $terms = explode("\n", (string) $Block['element']['handler']['argument']);
 
         foreach ($terms as $term) {
             $Element['elements'][] = [
@@ -169,7 +188,7 @@ class MarkdownExtra extends Markdown
             unset($Block['interrupted']);
         }
 
-        $text = \substr($Line['body'], \min($Line['indent'], 4));
+        $text = substr($Line['body'], min($Line['indent'], 4));
 
         $Block['dd']['handler']['argument'] .= "\n".$text;
 
@@ -183,12 +202,12 @@ class MarkdownExtra extends Markdown
     {
         $Block = parent::blockHeader($Line);
 
-        if ($Block !== null && \preg_match('/[ #]*{('.$this->regexAttribute.'+)}[ ]*$/', (string) $Block['element']['handler']['argument'], $matches, PREG_OFFSET_CAPTURE)) {
+        if ($Block !== null && preg_match('/[ #]*{('.$this->regexAttribute.'+)}[ ]*$/', (string) $Block['element']['handler']['argument'], $matches, PREG_OFFSET_CAPTURE)) {
             $attributeString = $matches[1][0];
 
             $Block['element']['attributes'] = $this->parseAttributeData($attributeString);
 
-            $Block['element']['handler']['argument'] = \substr($Block['element']['handler']['argument'], 0, $matches[0][1]);
+            $Block['element']['handler']['argument'] = substr($Block['element']['handler']['argument'], 0, $matches[0][1]);
         }
 
         return $Block;
@@ -203,10 +222,10 @@ class MarkdownExtra extends Markdown
             return;
         }
 
-        if (\preg_match('/^<(\w[\w-]*)(?:[ ]*'.$this->regexHtmlAttribute.')*[ ]*(\/)?>/', (string) $Line['text'], $matches)) {
-            $element = \strtolower($matches[1]);
+        if (preg_match('/^<(\w[\w-]*)(?:[ ]*'.$this->regexHtmlAttribute.')*[ ]*(\/)?>/', (string) $Line['text'], $matches)) {
+            $element = strtolower($matches[1]);
 
-            if (\in_array($element, $this->textLevelElements)) {
+            if (in_array($element, $this->textLevelElements, true)) {
                 return;
             }
 
@@ -219,20 +238,20 @@ class MarkdownExtra extends Markdown
                 ],
             ];
 
-            $length = \strlen((string) $matches[0]);
-            $remainder = \substr($Line['text'], $length);
+            $length    = strlen((string) $matches[0]);
+            $remainder = substr($Line['text'], $length);
 
-            if (\trim($remainder) === '') {
-                if (isset($matches[2]) || \in_array($matches[1], $this->voidElements)) {
+            if (trim($remainder) === '') {
+                if (isset($matches[2]) || in_array($matches[1], $this->voidElements, true)) {
                     $Block['closed'] = true;
-                    $Block['void'] = true;
+                    $Block['void']   = true;
                 }
             } else {
-                if (isset($matches[2]) || \in_array($matches[1], $this->voidElements)) {
+                if (isset($matches[2]) || in_array($matches[1], $this->voidElements, true)) {
                     return;
                 }
 
-                if (\preg_match('/<\/'.$matches[1].'>[ ]*$/i', $remainder)) {
+                if (preg_match('/<\/'.$matches[1].'>[ ]*$/i', $remainder)) {
                     $Block['closed'] = true;
                 }
             }
@@ -247,11 +266,11 @@ class MarkdownExtra extends Markdown
             return;
         }
 
-        if (\preg_match('/^<'.$Block['name'].'(?:[ ]*'.$this->regexHtmlAttribute.')*[ ]*>/i', (string) $Line['text'])) { // open
+        if (preg_match('/^<'.$Block['name'].'(?:[ ]*'.$this->regexHtmlAttribute.')*[ ]*>/i', (string) $Line['text'])) { // open
             $Block['depth']++;
         }
 
-        if (\preg_match('/(.*?)<\/'.$Block['name'].'>[ ]*$/i', (string) $Line['text'], $matches)) { // close
+        if (preg_match('/(.*?)<\/'.$Block['name'].'>[ ]*$/i', (string) $Line['text'], $matches)) { // close
             if ($Block['depth'] > 0) {
                 $Block['depth']--;
             } else {
@@ -285,12 +304,12 @@ class MarkdownExtra extends Markdown
     {
         $Block = parent::blockSetextHeader($Line, $Block);
 
-        if ($Block !== null && \preg_match('/[ ]*{('.$this->regexAttribute.'+)}[ ]*$/', (string) $Block['element']['handler']['argument'], $matches, PREG_OFFSET_CAPTURE)) {
+        if ($Block !== null && preg_match('/[ ]*{('.$this->regexAttribute.'+)}[ ]*$/', (string) $Block['element']['handler']['argument'], $matches, PREG_OFFSET_CAPTURE)) {
             $attributeString = $matches[1][0];
 
             $Block['element']['attributes'] = $this->parseAttributeData($attributeString);
 
-            $Block['element']['handler']['argument'] = \substr($Block['element']['handler']['argument'], 0, $matches[0][1]);
+            $Block['element']['handler']['argument'] = substr($Block['element']['handler']['argument'], 0, $matches[0][1]);
         }
 
         return $Block;
@@ -305,7 +324,7 @@ class MarkdownExtra extends Markdown
 
     protected function inlineFootnoteMarker($Excerpt)
     {
-        if (\preg_match('#^\[\^(.+?)\]#', (string) $Excerpt['text'], $matches)) {
+        if (preg_match('#^\[\^(.+?)\]#', (string) $Excerpt['text'], $matches)) {
             $name = $matches[1];
 
             if (! isset($this->DefinitionData['Footnote'][$name])) {
@@ -329,7 +348,7 @@ class MarkdownExtra extends Markdown
             ];
 
             return [
-                'extent'  => \strlen((string) $matches[0]),
+                'extent'  => strlen((string) $matches[0]),
                 'element' => $Element,
             ];
         }
@@ -344,12 +363,12 @@ class MarkdownExtra extends Markdown
     {
         $Link = parent::inlineLink($Excerpt);
 
-        $remainder = $Link !== null ? \substr($Excerpt['text'], $Link['extent']) : '';
+        $remainder = $Link !== null ? substr($Excerpt['text'], $Link['extent']) : '';
 
-        if (\preg_match('/^[ ]*{('.$this->regexAttribute.'+)}/', $remainder, $matches)) {
+        if (preg_match('/^[ ]*{('.$this->regexAttribute.'+)}/', $remainder, $matches)) {
             $Link['element']['attributes'] += $this->parseAttributeData($matches[1]);
 
-            $Link['extent'] += \strlen((string) $matches[0]);
+            $Link['extent'] += strlen((string) $matches[0]);
         }
 
         return $Link;
@@ -367,7 +386,7 @@ class MarkdownExtra extends Markdown
     {
         if (isset($Element['text'])) {
             $Element['elements'] = self::pregReplaceElements(
-                '/\b'.\preg_quote($this->currentAbreviation, '/').'\b/',
+                '/\b'.preg_quote($this->currentAbreviation, '/').'\b/',
                 [
                     [
                         'name'       => 'abbr',
@@ -393,7 +412,7 @@ class MarkdownExtra extends Markdown
         if (isset($this->DefinitionData['Abbreviation'])) {
             foreach ($this->DefinitionData['Abbreviation'] as $abbreviation => $meaning) {
                 $this->currentAbreviation = $abbreviation;
-                $this->currentMeaning = $meaning;
+                $this->currentMeaning     = $meaning;
 
                 $Inline['element'] = $this->elementApplyRecursiveDepthFirst(
                     fn (array $Element) => $this->insertAbreviation($Element),
@@ -411,8 +430,8 @@ class MarkdownExtra extends Markdown
 
     protected function addDdElement(array $Line, array $Block)
     {
-        $text = \substr($Line['text'], 1);
-        $text = \trim($text);
+        $text = substr($Line['text'], 1);
+        $text = trim($text);
 
         unset($Block['dd']);
 
@@ -450,7 +469,7 @@ class MarkdownExtra extends Markdown
             ],
         ];
 
-        \uasort($this->DefinitionData['Footnote'], 'self::sortFootnotes');
+        uasort($this->DefinitionData['Footnote'], 'self::sortFootnotes');
 
         foreach ($this->DefinitionData['Footnote'] as $definitionId => $DefinitionData) {
             if (! isset($DefinitionData['number'])) {
@@ -461,7 +480,7 @@ class MarkdownExtra extends Markdown
 
             $textElements = $this->textElements($text);
 
-            $numbers = \range(1, $DefinitionData['count']);
+            $numbers = range(1, $DefinitionData['count']);
 
             $backLinkElements = [];
 
@@ -470,7 +489,7 @@ class MarkdownExtra extends Markdown
                 $backLinkElements[] = [
                     'name'       => 'a',
                     'attributes' => [
-                        'href'  => \sprintf('#fnref%s:%s', $number, $definitionId),
+                        'href'  => sprintf('#fnref%s:%s', $number, $definitionId),
                         'rev'   => 'footnote',
                         'class' => 'footnote-backref',
                     ],
@@ -482,7 +501,7 @@ class MarkdownExtra extends Markdown
 
             unset($backLinkElements[0]);
 
-            $n = (is_countable($textElements) ? \count($textElements) : 0) - 1;
+            $n = (is_countable($textElements) ? count($textElements) : 0) - 1;
 
             if ($textElements[$n]['name'] === 'p') {
                 $backLinkElements = [...[
@@ -508,7 +527,7 @@ class MarkdownExtra extends Markdown
             $Element['elements'][1]['elements'][] = [
                 'name'       => 'li',
                 'attributes' => ['id' => 'fn:'.$definitionId],
-                'elements'   => \array_merge(
+                'elements'   => array_merge(
                     $textElements
                 ),
             ];
@@ -523,18 +542,18 @@ class MarkdownExtra extends Markdown
     {
         $Data = [];
 
-        $attributes = \preg_split('#[ ]+#', (string) $attributeString, -1, PREG_SPLIT_NO_EMPTY);
+        $attributes = preg_split('#[ ]+#', (string) $attributeString, -1, PREG_SPLIT_NO_EMPTY);
 
         foreach ($attributes as $attribute) {
             if ($attribute[0] === '#') {
-                $Data['id'] = \substr($attribute, 1);
+                $Data['id'] = substr($attribute, 1);
             } else { // "."
-                $classes[] = \substr($attribute, 1);
+                $classes[] = substr($attribute, 1);
             }
         }
 
         if (isset($classes)) {
-            $Data['class'] = \implode(' ', $classes);
+            $Data['class'] = implode(' ', $classes);
         }
 
         return $Data;
@@ -545,12 +564,12 @@ class MarkdownExtra extends Markdown
     protected function processTag($elementMarkup) // recursive
     {
         // http://stackoverflow.com/q/1148928/200145
-        \libxml_use_internal_errors(true);
+        libxml_use_internal_errors(true);
 
-        $DOMDocument = new DOMDocument();
+        $DOMDocument = new \DOMDocument();
 
         // http://stackoverflow.com/q/11309194/200145
-        $elementMarkup = \mb_convert_encoding($elementMarkup, 'HTML-ENTITIES', 'UTF-8');
+        $elementMarkup = mb_convert_encoding($elementMarkup, 'HTML-ENTITIES', 'UTF-8');
 
         // http://stackoverflow.com/q/4879946/200145
         $DOMDocument->loadHTML($elementMarkup);
@@ -571,7 +590,7 @@ class MarkdownExtra extends Markdown
             foreach ($DOMDocument->documentElement->childNodes as $Node) {
                 $nodeMarkup = $DOMDocument->saveHTML($Node);
 
-                if ($Node instanceof DOMElement && ! \in_array($Node->nodeName, $this->textLevelElements)) {
+                if ($Node instanceof \DOMElement && ! in_array($Node->nodeName, $this->textLevelElements, true)) {
                     $elementText .= $this->processTag($nodeMarkup);
                 } else {
                     $elementText .= $nodeMarkup;
@@ -584,7 +603,7 @@ class MarkdownExtra extends Markdown
 
         $markup = $DOMDocument->saveHTML($DOMDocument->documentElement);
 
-        return \str_replace('placeholder\x1A', $elementText, $markup);
+        return str_replace('placeholder\x1A', $elementText, $markup);
     }
 
     // ~

@@ -15,6 +15,9 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use function config;
+use function auth;
+
 class TorrentResource extends JsonResource
 {
     /**
@@ -48,8 +51,8 @@ class TorrentResource extends JsonResource
                 'category_id'       => $this->category_id,
                 'type_id'           => $this->type_id,
                 'created_at'        => $this->created_at,
-                'download_link'     => \route('torrent.download.rsskey', ['id' => $this->id, 'rsskey' => \auth('api')->user()->rsskey]),
-                'magnet_link'       => $this->when(\config('torrent.magnet') === true, 'magnet:?dn='.$this->name.'&xt=urn:btih:'.$this->info_hash.'&as='.route('torrent.download.rsskey', ['id' => $this->id, 'rsskey' => \auth('api')->user()->rsskey]).'&tr='.route('announce', ['passkey' => \auth('api')->user()->passkey]).'&xl='.$this->size),
+                'download_link'     => \route('torrent.download.rsskey', ['id' => $this->id, 'rsskey' => auth('api')->user()->rsskey]),
+                'magnet_link'       => $this->when(config('torrent.magnet') === true, 'magnet:?dn='.$this->name.'&xt=urn:btih:'.$this->info_hash.'&as='.route('torrent.download.rsskey', ['id' => $this->id, 'rsskey' => auth('api')->user()->rsskey]).'&tr='.route('announce', ['passkey' => auth('api')->user()->passkey]).'&xl='.$this->size),
                 'details_link'      => \route('torrent', ['id' => $this->id]),
             ],
         ];

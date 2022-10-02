@@ -17,6 +17,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\User;
 
+use function cache;
+use function view;
+
 /**
  * @see \Tests\Feature\Http\Controllers\Staff\CheaterControllerTest
  */
@@ -27,7 +30,7 @@ class CheaterController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $bannedGroup = \cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
+        $bannedGroup = cache()->rememberForever('banned_group', fn () => Group::where('slug', '=', 'banned')->pluck('id'));
 
         $cheaters = User::query()
             ->whereHas('history', function ($query) {
@@ -43,6 +46,6 @@ class CheaterController extends Controller
             ->latest()
             ->paginate(25);
 
-        return \view('Staff.cheater.index', ['cheaters' => $cheaters]);
+        return view('Staff.cheater.index', ['cheaters' => $cheaters]);
     }
 }

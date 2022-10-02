@@ -17,6 +17,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use function trans;
+
 /**
  * @see \Tests\Todo\Unit\Http\Requests\StorePollTest
  */
@@ -62,9 +64,9 @@ class StoreGiftRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'to_username.exists'           => \trans('bon.failed-user-not-found'),
+            'to_username.exists'           => trans('bon.failed-user-not-found'),
             'to_username.not_in'           => 'You cannot gift yourself',
-            'bonus_points.numeric|min|max' => \trans('bon.failed-amount-message'),
+            'bonus_points.numeric|min|max' => trans('bon.failed-amount-message'),
         ];
     }
 }

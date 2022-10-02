@@ -36,6 +36,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
+use function view;
+use function abort_if;
+use function auth;
+use function config;
+use function to_route;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\UserControllerTest
  */
@@ -54,7 +60,7 @@ class UserController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.user.index');
+        return view('Staff.user.index');
     }
 
     /**
@@ -62,12 +68,12 @@ class UserController extends Controller
      */
     public function settings(string $username): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $user = User::where('username', '=', $username)->firstOrFail();
-        $groups = Group::all();
+        $user      = User::where('username', '=', $username)->firstOrFail();
+        $groups    = Group::all();
         $internals = Internal::all();
-        $notes = Note::where('user_id', '=', $user->id)->latest()->paginate(25);
+        $notes     = Note::where('user_id', '=', $user->id)->latest()->paginate(25);
 
-        return \view('Staff.user.edit', [
+        return view('Staff.user.edit', [
             'user'      => $user,
             'groups'    => $groups,
             'internals' => $internals,
@@ -80,7 +86,7 @@ class UserController extends Controller
      */
     public function edit(Request $request, string $username): \Illuminate\Http\RedirectResponse
     {
-        $user = User::with('group')->where('username', '=', $username)->firstOrFail();
+        $user  = User::with('group')->where('username', '=', $username)->firstOrFail();
         $staff = $request->user();
 
         $sendto = (int) $request->input('group_id');
@@ -108,21 +114,21 @@ class UserController extends Controller
         // Hard coded until group change.
 
         if ($target >= $sender || ($sender == 0 && ($sendto === 6 || $sendto === 4 || $sendto === 10)) || ($sender == 1 && ($sendto === 4 || $sendto === 10))) {
-            return \to_route('users.show', ['username' => $user->username])
+            return to_route('users.show', ['username' => $user->username])
                 ->withErrors('You Are Not Authorized To Perform This Action!');
         }
 
-        $user->username = $request->input('username');
-        $user->email = $request->input('email');
-        $user->uploaded = $request->input('uploaded');
-        $user->downloaded = $request->input('downloaded');
-        $user->title = $request->input('title');
-        $user->about = $request->input('about');
-        $user->group_id = (int) $request->input('group_id');
+        $user->username    = $request->input('username');
+        $user->email       = $request->input('email');
+        $user->uploaded    = $request->input('uploaded');
+        $user->downloaded  = $request->input('downloaded');
+        $user->title       = $request->input('title');
+        $user->about       = $request->input('about');
+        $user->group_id    = (int) $request->input('group_id');
         $user->internal_id = (int) $request->input('internal_id');
         $user->save();
 
-        return \to_route('users.show', ['username' => $user->username])
+        return to_route('users.show', ['username' => $user->username])
             ->withSuccess('Account Was Updated Successfully!');
     }
 
@@ -131,16 +137,16 @@ class UserController extends Controller
      */
     public function permissions(Request $request, string $username): \Illuminate\Http\RedirectResponse
     {
-        $user = User::where('username', '=', $username)->firstOrFail();
-        $user->can_upload = $request->input('can_upload');
+        $user               = User::where('username', '=', $username)->firstOrFail();
+        $user->can_upload   = $request->input('can_upload');
         $user->can_download = $request->input('can_download');
-        $user->can_comment = $request->input('can_comment');
-        $user->can_invite = $request->input('can_invite');
-        $user->can_request = $request->input('can_request');
-        $user->can_chat = $request->input('can_chat');
+        $user->can_comment  = $request->input('can_comment');
+        $user->can_invite   = $request->input('can_invite');
+        $user->can_request  = $request->input('can_request');
+        $user->can_chat     = $request->input('can_chat');
         $user->save();
 
-        return \to_route('users.show', ['username' => $user->username])
+        return to_route('users.show', ['username' => $user->username])
             ->withSuccess('Account Permissions Successfully Edited');
     }
 
@@ -149,11 +155,11 @@ class UserController extends Controller
      */
     protected function password(Request $request, string $username): \Illuminate\Http\RedirectResponse
     {
-        $user = User::where('username', '=', $username)->firstOrFail();
+        $user           = User::where('username', '=', $username)->firstOrFail();
         $user->password = Hash::make($request->input('new_password'));
         $user->save();
 
-        return \to_route('users.show', ['username' => $user->username])
+        return to_route('users.show', ['username' => $user->username])
             ->withSuccess('Account Password Was Updated Successfully!');
     }
 
@@ -164,7 +170,7 @@ class UserController extends Controller
     {
         $user = User::where('username', '=', $username)->firstOrFail();
 
-        \abort_if($user->group->is_modo || \auth()->user()->id == $user->id, 403);
+        abort_if($user->group->is_modo || auth()->user()->id == $user->id, 403);
 
         // Removes UserID from Torrents if any and replaces with System UserID (1)
         foreach (Torrent::withAnyStatus()->where('user_id', '=', $user->id)->get() as $tor) {
@@ -261,11 +267,11 @@ class UserController extends Controller
         }
 
         if ($user->delete()) {
-            return \to_route('staff.dashboard.index')
+            return to_route('staff.dashboard.index')
                 ->withSuccess('Account Has Been Removed');
         }
 
-        return \to_route('staff.dashboard.index')
+        return to_route('staff.dashboard.index')
             ->withErrors('Something Went Wrong!');
     }
 
@@ -274,26 +280,26 @@ class UserController extends Controller
      */
     protected function warnUser(Request $request, string $username): \Illuminate\Http\RedirectResponse
     {
-        $user = User::where('username', '=', $username)->firstOrFail();
-        $carbon = new Carbon();
-        $warning = new Warning();
-        $warning->user_id = $user->id;
-        $warning->warned_by = $request->user()->id;
-        $warning->torrent = null;
-        $warning->reason = $request->input('message');
-        $warning->expires_on = $carbon->copy()->addDays(\config('hitrun.expire'));
-        $warning->active = '1';
+        $user                = User::where('username', '=', $username)->firstOrFail();
+        $carbon              = new Carbon();
+        $warning             = new Warning();
+        $warning->user_id    = $user->id;
+        $warning->warned_by  = $request->user()->id;
+        $warning->torrent    = null;
+        $warning->reason     = $request->input('message');
+        $warning->expires_on = $carbon->copy()->addDays(config('hitrun.expire'));
+        $warning->active     = '1';
         $warning->save();
 
         // Send Private Message
-        $pm = new PrivateMessage();
-        $pm->sender_id = 1;
+        $pm              = new PrivateMessage();
+        $pm->sender_id   = 1;
         $pm->receiver_id = $user->id;
-        $pm->subject = 'Received warning';
-        $pm->message = 'You have received a [b]warning[/b]. Reason: '.$request->input('message');
+        $pm->subject     = 'Received warning';
+        $pm->message     = 'You have received a [b]warning[/b]. Reason: '.$request->input('message');
         $pm->save();
 
-        return \to_route('users.show', ['username' => $user->username])
+        return to_route('users.show', ['username' => $user->username])
             ->withSuccess('Warning issued successfully!');
     }
 }

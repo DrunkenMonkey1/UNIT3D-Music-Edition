@@ -17,6 +17,9 @@ use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function view;
+use function auth;
+
 class NotificationSearch extends Component
 {
     use WithPagination;
@@ -77,7 +80,7 @@ class NotificationSearch extends Component
 
     final public function getNotificationsProperty(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return \auth()->user()->notifications()
+        return auth()->user()->notifications()
             ->when($this->bon_gifts, function ($query) {
                 $query->where('type', '=', \App\Notifications\NewBon::class);
             })
@@ -152,8 +155,8 @@ class NotificationSearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.notification-search', [
-            'user'               => User::with(['group'])->findOrFail(\auth()->user()->id),
+        return view('livewire.notification-search', [
+            'user'               => User::with(['group'])->findOrFail(auth()->user()->id),
             'notifications'      => $this->notifications,
         ]);
     }

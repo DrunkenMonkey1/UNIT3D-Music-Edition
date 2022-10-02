@@ -18,6 +18,8 @@ use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function view;
+
 class UserActive extends Component
 {
     use WithPagination;
@@ -115,7 +117,7 @@ class UserActive extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.user-active', [
+        return view('livewire.user-active', [
             'actives' => $this->active,
         ]);
     }

@@ -18,6 +18,10 @@ use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+use function view;
+use function validator;
+use function to_route;
+
 /**
  * @see \Tests\Feature\Http\Controllers\Staff\TypeControllerTest
  */
@@ -30,7 +34,7 @@ class TypeController extends Controller
     {
         $types = Type::all()->sortBy('position');
 
-        return \view('Staff.type.index', ['types' => $types]);
+        return view('Staff.type.index', ['types' => $types]);
     }
 
     /**
@@ -38,7 +42,7 @@ class TypeController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.type.create');
+        return view('Staff.type.create');
     }
 
     /**
@@ -46,25 +50,25 @@ class TypeController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $type = new Type();
-        $type->name = $request->input('name');
-        $type->slug = Str::slug($type->name);
+        $type           = new Type();
+        $type->name     = $request->input('name');
+        $type->slug     = Str::slug($type->name);
         $type->position = $request->input('position');
 
-        $v = \validator($type->toArray(), [
+        $v = validator($type->toArray(), [
             'name'     => 'required',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.types.index')
+            return to_route('staff.types.index')
                 ->withErrors($v->errors());
         }
 
         $type->save();
 
-        return \to_route('staff.types.index')
+        return to_route('staff.types.index')
             ->withSuccess('Type Successfully Added');
     }
 
@@ -75,7 +79,7 @@ class TypeController extends Controller
     {
         $type = Type::findOrFail($id);
 
-        return \view('Staff.type.edit', ['type' => $type]);
+        return view('Staff.type.edit', ['type' => $type]);
     }
 
     /**
@@ -83,25 +87,25 @@ class TypeController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $type = Type::findOrFail($id);
-        $type->name = $request->input('name');
-        $type->slug = Str::slug($type->name);
+        $type           = Type::findOrFail($id);
+        $type->name     = $request->input('name');
+        $type->slug     = Str::slug($type->name);
         $type->position = $request->input('position');
 
-        $v = \validator($type->toArray(), [
+        $v = validator($type->toArray(), [
             'name'     => 'required',
             'slug'     => 'required',
             'position' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.types.index')
+            return to_route('staff.types.index')
                 ->withErrors($v->errors());
         }
 
         $type->save();
 
-        return \to_route('staff.types.index')
+        return to_route('staff.types.index')
             ->withSuccess('Type Successfully Modified');
     }
 
@@ -115,7 +119,7 @@ class TypeController extends Controller
         $type = Type::findOrFail($id);
         $type->delete();
 
-        return \to_route('staff.types.index')
+        return to_route('staff.types.index')
             ->withSuccess('Type Successfully Deleted');
     }
 }

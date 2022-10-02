@@ -27,6 +27,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use voku\helper\AntiXSS;
 
+use function htmlspecialchars;
+use function auth;
+use function config;
+
 class Torrent extends Model
 {
     use HasFactory;
@@ -188,7 +192,7 @@ class Torrent extends Model
      */
     public function setDescriptionAttribute(?string $value): void
     {
-        $this->attributes['description'] = \htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
+        $this->attributes['description'] = htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
     }
 
     /**
@@ -225,7 +229,7 @@ class Torrent extends Model
      */
     public function bookmarked(): bool
     {
-        return (bool) Bookmark::where('user_id', '=', \auth()->user()->id)
+        return (bool) Bookmark::where('user_id', '=', auth()->user()->id)
             ->where('torrent_id', '=', $this->id)
             ->first();
     }
@@ -237,7 +241,7 @@ class Torrent extends Model
     {
         $user = User::with('notification')->findOrFail($this->user_id);
         if ($type == 'thank') {
-            if ($user->acceptsNotification(\auth()->user(), $user, 'torrent', 'show_torrent_thank')) {
+            if ($user->acceptsNotification(auth()->user(), $user, 'torrent', 'show_torrent_thank')) {
                 $user->notify(new NewThank('torrent', $payload));
 
                 return true;
@@ -246,7 +250,7 @@ class Torrent extends Model
             return true;
         }
 
-        if ($user->acceptsNotification(\auth()->user(), $user, 'torrent', 'show_torrent_comment')) {
+        if ($user->acceptsNotification(auth()->user(), $user, 'torrent', 'show_torrent_comment')) {
             $user->notify(new NewComment('torrent', $payload));
 
             return true;
@@ -262,6 +266,6 @@ class Torrent extends Model
     {
         $pfree = $user && ($user->group->is_freeleech || PersonalFreeleech::where('user_id', '=', $user->id)->first());
 
-        return $this->free || \config('other.freeleech') || $pfree;
+        return $this->free || config('other.freeleech') || $pfree;
     }
 }

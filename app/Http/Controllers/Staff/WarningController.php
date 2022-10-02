@@ -16,6 +16,8 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Warning;
 
+use function view;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\WarningControllerTest
  */
@@ -26,9 +28,9 @@ class WarningController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        $warnings = Warning::with(['torrenttitle', 'warneduser'])->latest()->paginate(25);
+        $warnings     = Warning::with(['torrenttitle', 'warneduser'])->latest()->paginate(25);
         $warningcount = Warning::count();
 
-        return \view('Staff.warning.index', ['warnings' => $warnings, 'warningcount' => $warningcount]);
+        return view('Staff.warning.index', ['warnings' => $warnings, 'warningcount' => $warningcount]);
     }
 }

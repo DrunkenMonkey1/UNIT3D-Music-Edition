@@ -7,6 +7,13 @@ use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Str;
 use Psr\SimpleCache\InvalidArgumentException;
 
+use function in_array;
+use function cache;
+use function config;
+use function explode;
+use function strtolower;
+use function array_merge;
+
 class EmailBlacklist implements Rule
 {
     /**
@@ -23,10 +30,10 @@ class EmailBlacklist implements Rule
         $this->refresh();
 
         // Extract domain from supplied email address
-        $domain = Str::after(\strtolower($value), '@');
+        $domain = Str::after(strtolower($value), '@');
 
         // Run validation check
-        return ! \in_array($domain, $this->domains, true);
+        return ! in_array($domain, $this->domains, true);
     }
 
     /**
@@ -35,7 +42,7 @@ class EmailBlacklist implements Rule
     public function refresh(): void
     {
         $this->shouldUpdate();
-        $this->domains = \cache()->get(\config('email-blacklist.cache-key'));
+        $this->domains = cache()->get(config('email-blacklist.cache-key'));
         $this->appendCustomDomains();
     }
 
@@ -44,10 +51,10 @@ class EmailBlacklist implements Rule
      */
     protected function shouldUpdate(): void
     {
-        $autoupdate = \config('email-blacklist.auto-update');
+        $autoupdate = config('email-blacklist.auto-update');
 
         try {
-            if ($autoupdate && ! \cache()->has(\config('email-blacklist.cache-key'))) {
+            if ($autoupdate && ! cache()->has(config('email-blacklist.cache-key'))) {
                 EmailBlacklistUpdater::update();
             }
         } catch (InvalidArgumentException) {
@@ -59,13 +66,13 @@ class EmailBlacklist implements Rule
      */
     protected function appendCustomDomains(): void
     {
-        $appendList = \config('email-blacklist.append');
+        $appendList = config('email-blacklist.append');
         if ($appendList === null) {
             return;
         }
 
-        $appendDomains = \explode('|', \strtolower($appendList));
-        $this->domains = \array_merge($this->domains, $appendDomains);
+        $appendDomains = explode('|', strtolower($appendList));
+        $this->domains = array_merge($this->domains, $appendDomains);
     }
 
     /**

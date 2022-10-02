@@ -16,6 +16,9 @@ namespace App\Http\Livewire;
 use App\Models\Torrent;
 use Livewire\Component;
 
+use function auth;
+use function view;
+
 class BookmarkButton extends Component
 {
     public $torrent;
@@ -24,7 +27,7 @@ class BookmarkButton extends Component
 
     final public function mount($torrent): void
     {
-        $this->user = \auth()->user();
+        $this->user    = auth()->user();
         $this->torrent = Torrent::withAnyStatus()->findOrFail($torrent);
     }
 
@@ -53,6 +56,6 @@ class BookmarkButton extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.bookmark-button');
+        return view('livewire.bookmark-button');
     }
 }

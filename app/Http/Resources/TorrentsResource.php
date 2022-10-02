@@ -15,6 +15,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
+use function route;
+
 class TorrentsResource extends ResourceCollection
 {
     /**
@@ -34,7 +36,7 @@ class TorrentsResource extends ResourceCollection
     {
         return [
             'links'    => [
-                'self' => \route('torrents.index'),
+                'self' => route('torrents.index'),
             ],
         ];
     }

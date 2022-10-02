@@ -17,6 +17,10 @@ use App\Http\Controllers\Controller;
 use App\Models\MediaLanguage;
 use Illuminate\Http\Request;
 
+use function view;
+use function validator;
+use function to_route;
+
 class MediaLanguageController extends Controller
 {
     /**
@@ -26,7 +30,7 @@ class MediaLanguageController extends Controller
     {
         $mediaLanguages = MediaLanguage::all()->sortBy('name');
 
-        return \view('Staff.media_language.index', ['media_languages' => $mediaLanguages]);
+        return view('Staff.media_language.index', ['media_languages' => $mediaLanguages]);
     }
 
     /**
@@ -34,7 +38,7 @@ class MediaLanguageController extends Controller
      */
     public function create(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('Staff.media_language.create');
+        return view('Staff.media_language.create');
     }
 
     /**
@@ -42,23 +46,23 @@ class MediaLanguageController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
-        $mediaLanguage = new MediaLanguage();
+        $mediaLanguage       = new MediaLanguage();
         $mediaLanguage->name = $request->input('name');
         $mediaLanguage->code = $request->input('code');
 
-        $v = \validator($mediaLanguage->toArray(), [
+        $v = validator($mediaLanguage->toArray(), [
             'name' => 'required|unique:media_languages',
             'code' => 'required|unique:media_languages',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.media_languages.index')
+            return to_route('staff.media_languages.index')
                 ->withErrors($v->errors());
         }
 
         $mediaLanguage->save();
 
-        return \to_route('staff.media_languages.index')
+        return to_route('staff.media_languages.index')
             ->withSuccess('Media Language Successfully Added');
     }
 
@@ -69,7 +73,7 @@ class MediaLanguageController extends Controller
     {
         $mediaLanguage = MediaLanguage::findOrFail($id);
 
-        return \view('Staff.media_language.edit', ['media_language' => $mediaLanguage]);
+        return view('Staff.media_language.edit', ['media_language' => $mediaLanguage]);
     }
 
     /**
@@ -77,23 +81,23 @@ class MediaLanguageController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $mediaLanguage = MediaLanguage::findOrFail($id);
+        $mediaLanguage       = MediaLanguage::findOrFail($id);
         $mediaLanguage->name = $request->input('name');
         $mediaLanguage->code = $request->input('code');
 
-        $v = \validator($mediaLanguage->toArray(), [
+        $v = validator($mediaLanguage->toArray(), [
             'name' => 'required',
             'code' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.media_languages.index')
+            return to_route('staff.media_languages.index')
                 ->withErrors($v->errors());
         }
 
         $mediaLanguage->save();
 
-        return \to_route('staff.media_languages.index')
+        return to_route('staff.media_languages.index')
             ->withSuccess('Media Language Successfully Updated');
     }
 
@@ -107,7 +111,7 @@ class MediaLanguageController extends Controller
         $mediaLanguage = MediaLanguage::findOrFail($id);
         $mediaLanguage->delete();
 
-        return \to_route('staff.media_languages.index')
+        return to_route('staff.media_languages.index')
             ->withSuccess('Media Language Has Successfully Been Deleted');
     }
 }

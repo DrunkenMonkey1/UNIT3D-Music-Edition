@@ -18,6 +18,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
+use function view;
+use function config;
+use function to_route;
+
 /**
  * @see \Tests\Feature\Http\Controllers\ContactControllerTest
  */
@@ -28,7 +32,7 @@ class ContactController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
-        return \view('contact.index');
+        return view('contact.index');
     }
 
     /**
@@ -37,12 +41,12 @@ class ContactController extends Controller
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         // Fetch owner account
-        $user = User::where('username', \config('unit3d.owner-username'))->first();
+        $user = User::where('username', config('unit3d.owner-username'))->first();
 
         $input = $request->all();
         Mail::to($user->email)->send(new Contact($input));
 
-        return \to_route('home.index')
+        return to_route('home.index')
             ->withSuccess('Your Message Was Successfully Sent');
     }
 }

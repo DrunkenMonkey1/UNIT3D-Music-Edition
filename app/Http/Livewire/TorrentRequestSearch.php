@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function view;
+use function auth;
+
 class TorrentRequestSearch extends Component
 {
     use WithPagination;
@@ -155,18 +158,18 @@ class TorrentRequestSearch extends Component
                 });
             })
             ->when($this->myRequests, function ($query) {
-                $query->where('user_id', '=', \auth()->user()->id);
+                $query->where('user_id', '=', auth()->user()->id);
             })
             ->when($this->myClaims, function ($query) {
-                $requestCliams = TorrentRequestClaim::where('username', '=', \auth()->user()->username)->pluck('request_id');
+                $requestCliams = TorrentRequestClaim::where('username', '=', auth()->user()->username)->pluck('request_id');
                 $query->whereIntegerInRaw('id', $requestCliams)->whereNull('filled_hash')->whereNull('approved_by');
             })
             ->when($this->myVoted, function ($query) {
-                $requestVotes = TorrentRequestBounty::where('user_id', '=', \auth()->user()->id)->pluck('requests_id');
+                $requestVotes = TorrentRequestBounty::where('user_id', '=', auth()->user()->id)->pluck('requests_id');
                 $query->whereIntegerInRaw('id', $requestVotes);
             })
             ->when($this->myFilled, function ($query) {
-                $query->where('filled_by', '=', \auth()->user()->id);
+                $query->where('filled_by', '=', auth()->user()->id);
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
@@ -185,8 +188,8 @@ class TorrentRequestSearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.torrent-request-search', [
-            'user'                     => \auth()->user(),
+        return view('livewire.torrent-request-search', [
+            'user'                     => auth()->user(),
             'torrentRequests'          => $this->torrentRequests,
             'torrentRequestStat'       => $this->torrentRequestStat,
             'torrentRequestBountyStat' => $this->torrentRequestBountyStat,

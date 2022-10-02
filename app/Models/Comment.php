@@ -21,6 +21,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use voku\helper\AntiXSS;
 
+use function htmlspecialchars;
+use function property_exists;
+use function strtotime;
+use function event;
+
 class Comment extends Model
 {
     use HasFactory;
@@ -82,7 +87,7 @@ class Comment extends Model
      */
     public function setContentAttribute(?string $value): void
     {
-        $this->attributes['content'] = \htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
+        $this->attributes['content'] = htmlspecialchars((new AntiXSS())->xss_clean($value), ENT_NOQUOTES);
     }
 
     /**
@@ -100,11 +105,11 @@ class Comment extends Model
      */
     public static function checkForStale(Ticket $ticket): void
     {
-        if (empty($ticket->reminded_at) || \strtotime($ticket->reminded_at) < \strtotime('+ 3 days')) {
+        if (empty($ticket->reminded_at) || strtotime($ticket->reminded_at) < strtotime('+ 3 days')) {
             $last_comment = $ticket->comments()->latest('id')->first();
 
-            if (\property_exists($last_comment, 'id') && $last_comment->id !== null && ! $last_comment->user->is_modo && \strtotime($last_comment->created_at) < \strtotime('- 3 days')) {
-                \event(new TicketWentStale($last_comment->ticket));
+            if (property_exists($last_comment, 'id') && $last_comment->id !== null && ! $last_comment->user->is_modo && strtotime($last_comment->created_at) < strtotime('- 3 days')) {
+                event(new TicketWentStale($last_comment->ticket));
             }
         }
     }

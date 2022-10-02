@@ -18,6 +18,13 @@ use App\Models\PrivateMessage;
 use App\Models\Report;
 use Illuminate\Http\Request;
 
+use function preg_match_all;
+use function view;
+use function auth;
+use function validator;
+use function sprintf;
+use function to_route;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\ReportControllerTest
  */
@@ -30,7 +37,7 @@ class ReportController extends Controller
     {
         $reports = Report::orderBy('solved')->latest()->paginate(25);
 
-        return \view('Staff.report.index', ['reports' => $reports]);
+        return view('Staff.report.index', ['reports' => $reports]);
     }
 
     /**
@@ -40,9 +47,9 @@ class ReportController extends Controller
     {
         $report = Report::findOrFail($id);
 
-        \preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', (string) $report->message, $match);
+        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', (string) $report->message, $match);
 
-        return \view('Staff.report.show', ['report' => $report, 'urls' => $match[0]]);
+        return view('Staff.report.show', ['report' => $report, 'urls' => $match[0]]);
     }
 
     /**
@@ -50,43 +57,43 @@ class ReportController extends Controller
      */
     public function update(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $user = \auth()->user();
+        $user = auth()->user();
 
         $report = Report::findOrFail($id);
         if ($report->solved == 1) {
-            return \to_route('staff.reports.index')
+            return to_route('staff.reports.index')
                 ->withErrors('This Report Has Already Been Solved');
         }
 
-        $report->verdict = $request->input('verdict');
+        $report->verdict  = $request->input('verdict');
         $report->staff_id = $user->id;
-        $report->solved = 1;
+        $report->solved   = 1;
 
-        $v = \validator($report->toArray(), [
+        $v = validator($report->toArray(), [
             'verdict'  => 'required|min:3',
             'staff_id' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('staff.reports.show', ['id' => $report->id])
+            return to_route('staff.reports.show', ['id' => $report->id])
                 ->withErrors($v->errors());
         }
 
         $report->save();
 
         // Send Private Message
-        $privateMessage = new PrivateMessage();
-        $privateMessage->sender_id = $user->id;
+        $privateMessage              = new PrivateMessage();
+        $privateMessage->sender_id   = $user->id;
         $privateMessage->receiver_id = $report->reporter_id;
-        $privateMessage->subject = 'Your Report Has A New Verdict';
-        $privateMessage->message = \sprintf('[b]REPORT TITLE:[/b] %s
+        $privateMessage->subject     = 'Your Report Has A New Verdict';
+        $privateMessage->message     = sprintf('[b]REPORT TITLE:[/b] %s
 
                         [b]ORIGINAL MESSAGE:[/b] %s
 
                         [b]VERDICT:[/b] %s', $report->title, $report->message, $report->verdict);
         $privateMessage->save();
 
-        return \to_route('staff.reports.index')
+        return to_route('staff.reports.index')
             ->withSuccess('Report has been successfully resolved');
     }
 }

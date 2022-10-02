@@ -13,16 +13,16 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
+use function abort_unless;
 
 class CheckForAdmin
 {
     /**
      * Handle an incoming request.
      */
-    public function handle(\Illuminate\Http\Request $request, Closure $next): mixed
+    public function handle(\Illuminate\Http\Request $request, \Closure $next): mixed
     {
-        \abort_unless($request->user()->group->is_admin, 403);
+        abort_unless($request->user()->group->is_admin, 403);
 
         return $next($request);
     }

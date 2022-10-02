@@ -21,6 +21,9 @@ use App\Models\Peer;
 use App\Repositories\ChatRepository;
 use Illuminate\Support\Carbon;
 
+use function broadcast;
+use function to_route;
+
 /**
  * @see \Tests\Todo\Feature\Http\Controllers\Staff\FlushControllerTest
  */
@@ -41,7 +44,7 @@ class FlushController extends Controller
     public function peers(): \Illuminate\Http\RedirectResponse
     {
         $carbon = new Carbon();
-        $peers = Peer::select(['id', 'torrent_id', 'user_id', 'updated_at'])->where('updated_at', '<', $carbon->copy()->subHours(2)->toDateTimeString())->get();
+        $peers  = Peer::select(['id', 'torrent_id', 'user_id', 'updated_at'])->where('updated_at', '<', $carbon->copy()->subHours(2)->toDateTimeString())->get();
 
         foreach ($peers as $peer) {
             $history = History::where('torrent_id', '=', $peer->torrent_id)->where('user_id', '=', $peer->user_id)->first();
@@ -53,7 +56,7 @@ class FlushController extends Controller
             $peer->delete();
         }
 
-        return \to_route('staff.dashboard.index')
+        return to_route('staff.dashboard.index')
             ->withSuccess('Ghost Peers Have Been Flushed');
     }
 
@@ -65,7 +68,7 @@ class FlushController extends Controller
     public function chat(): \Illuminate\Http\RedirectResponse
     {
         foreach (Message::all() as $message) {
-            \broadcast(new MessageDeleted($message));
+            broadcast(new MessageDeleted($message));
             $message->delete();
         }
 
@@ -73,7 +76,7 @@ class FlushController extends Controller
             'Chatbox Has Been Flushed! :broom:'
         );
 
-        return \to_route('staff.dashboard.index')
+        return to_route('staff.dashboard.index')
             ->withSuccess('Chatbox Has Been Flushed');
     }
 }

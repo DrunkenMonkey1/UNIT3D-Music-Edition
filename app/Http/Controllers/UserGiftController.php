@@ -20,6 +20,13 @@ use App\Notifications\NewBon;
 use App\Repositories\ChatRepository;
 use Illuminate\Http\Request;
 
+use function view;
+use function abort_unless;
+use function sprintf;
+use function href_profile;
+use function redirect;
+use function trans;
+
 class UserGiftController extends Controller
 {
     /**
@@ -36,7 +43,7 @@ class UserGiftController extends Controller
     {
         $user = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id === $user->id || $request->user()->group->is_modo, 403);
+        abort_unless($request->user()->id === $user->id || $request->user()->group->is_modo, 403);
 
         $userbon = $user->getSeedbonus();
 
@@ -61,7 +68,7 @@ class UserGiftController extends Controller
             ->where('name', '=', 'gift')
             ->sum('cost');
 
-        return \view('bonus.gifts', [
+        return view('bonus.gifts', [
             'user'              => $user,
             'gifttransactions'  => $gifttransactions,
             'userbon'           => $userbon,
@@ -77,11 +84,11 @@ class UserGiftController extends Controller
     {
         $user = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id === $user->id, 403);
+        abort_unless($request->user()->id === $user->id, 403);
 
         $userbon = $user->getSeedbonus();
 
-        return \view('bonus.gift', [
+        return view('bonus.gift', [
             'user'              => $user,
             'userbon'           => $userbon,
         ]);
@@ -94,9 +101,9 @@ class UserGiftController extends Controller
     {
         $user = User::where('username', '=', $username)->sole();
 
-        \abort_unless($request->user()->id === $user->id, 403);
+        abort_unless($request->user()->id === $user->id, 403);
 
-        $request = (object) $request->validated();
+        $request   = (object) $request->validated();
         $recipient = User::where('username', '=', $request->to_username)->sole();
 
         $value = $request->bonus_points;
@@ -104,13 +111,13 @@ class UserGiftController extends Controller
         $recipient->increment('seedbonus', $value);
         $user->decrement('seedbonus', $value);
 
-        $bonTransactions = new BonTransactions();
-        $bonTransactions->itemID = 0;
-        $bonTransactions->name = 'gift';
-        $bonTransactions->cost = $value;
-        $bonTransactions->sender = $user->id;
-        $bonTransactions->receiver = $recipient->id;
-        $bonTransactions->comment = $request->bonus_message;
+        $bonTransactions             = new BonTransactions();
+        $bonTransactions->itemID     = 0;
+        $bonTransactions->name       = 'gift';
+        $bonTransactions->cost       = $value;
+        $bonTransactions->sender     = $user->id;
+        $bonTransactions->receiver   = $recipient->id;
+        $bonTransactions->comment    = $request->bonus_message;
         $bonTransactions->torrent_id = null;
         $bonTransactions->save();
 
@@ -119,16 +126,16 @@ class UserGiftController extends Controller
         }
 
         $this->chatRepository->systemMessage(
-            \sprintf(
+            sprintf(
                 '[url=%s]%s[/url] has gifted %s BON to [url=%s]%s[/url]',
-                \href_profile($user),
+                href_profile($user),
                 $user->username,
                 $value,
-                \href_profile($recipient),
+                href_profile($recipient),
                 $recipient->username
             )
         );
 
-        return \redirect()->back()->withSuccess(\trans('bon.gift-sent'));
+        return redirect()->back()->withSuccess(trans('bon.gift-sent'));
     }
 }

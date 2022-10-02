@@ -16,6 +16,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+use function view;
+
 /**
  * @see \Tests\Feature\Http\Controllers\AchievementsControllerTest
  */
@@ -29,9 +31,9 @@ class AchievementsController extends Controller
         $user = $request->user();
 
         $achievements = $user->unlockedAchievements();
-        $pending = $user->inProgressAchievements();
+        $pending      = $user->inProgressAchievements();
 
-        return \view('achievement.index', [
+        return view('achievement.index', [
             'route'        => 'achievement',
             'user'         => $user,
             'achievements' => $achievements,
@@ -48,7 +50,7 @@ class AchievementsController extends Controller
 
         $achievements = $user->unlockedAchievements();
 
-        return \view('achievement.show', [
+        return view('achievement.show', [
             'route'        => 'achievement',
             'user'         => $user,
             'achievements' => $achievements,

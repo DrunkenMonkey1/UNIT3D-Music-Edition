@@ -17,6 +17,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+use function config;
+
 class UnbanUser extends Mailable
 {
     use Queueable;
@@ -35,6 +37,6 @@ class UnbanUser extends Mailable
     public function build(): static
     {
         return $this->markdown('emails.unban')
-            ->subject('You Have Been Unbanned - '.\config('other.title'));
+            ->subject('You Have Been Unbanned - '.config('other.title'));
     }
 }

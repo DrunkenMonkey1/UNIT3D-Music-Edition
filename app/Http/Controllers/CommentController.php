@@ -39,6 +39,23 @@ use App\Repositories\TaggedUserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
+use function href_collection;
+use function href_article;
+use function href_playlist;
+use function href_request;
+use function collect;
+use function config;
+use function is_countable;
+use function count;
+use function href_torrent;
+use function href_profile;
+use function sprintf;
+use function to_route;
+use function validator;
+use function abort_unless;
+use function redirect;
+use function trans;
+
 /**
  * @see \Tests\Feature\Http\Controllers\CommentControllerTest
  */
@@ -59,27 +76,27 @@ class CommentController extends Controller
     public function collection(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $collection = Collection::findOrFail($id);
-        $user = $request->user();
+        $user       = $request->user();
 
-        if (RateLimiter::tooManyAttempts('collection-comment:'.$user->id, \config('unit3d.comment-rate-limit'))) {
-            return \to_route('collection.show', ['id' => $id])
-                ->withErrors(\trans('comment.slow-down'));
+        if (RateLimiter::tooManyAttempts('collection-comment:'.$user->id, config('unit3d.comment-rate-limit'))) {
+            return to_route('collection.show', ['id' => $id])
+                ->withErrors(trans('comment.slow-down'));
         }
 
         RateLimiter::hit('collection-comment:'.$user->id);
 
         if ($user->can_comment == 0) {
-            return \to_route('collection.show', ['id' => $collection->id])
-                ->withErrors(\trans('comment.rights-revoked'));
+            return to_route('collection.show', ['id' => $collection->id])
+                ->withErrors(trans('comment.rights-revoked'));
         }
 
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->anon = $request->input('anonymous');
-        $comment->user_id = $user->id;
+        $comment                = new Comment();
+        $comment->content       = $request->input('content');
+        $comment->anon          = $request->input('anonymous');
+        $comment->user_id       = $user->id;
         $comment->collection_id = $collection->id;
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'       => 'required',
             'user_id'       => 'required',
             'collection_id' => 'required',
@@ -87,29 +104,29 @@ class CommentController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('collection.show', ['id' => $collection->id])
+            return to_route('collection.show', ['id' => $collection->id])
                 ->withErrors($v->errors());
         }
 
         $comment->save();
 
-        $collectionUrl = \href_collection($collection);
-        $profileUrl = \href_profile($user);
+        $collectionUrl = href_collection($collection);
+        $profileUrl    = href_profile($user);
 
         // Auto Shout
         if ($comment->anon == 0) {
             $this->chatRepository->systemMessage(
-                \sprintf('[url=%s]%s[/url] has left a comment on collection [url=%s]%s[/url]', $profileUrl, $user->username, $collectionUrl, $collection->name)
+                sprintf('[url=%s]%s[/url] has left a comment on collection [url=%s]%s[/url]', $profileUrl, $user->username, $collectionUrl, $collection->name)
             );
         } else {
             $this->chatRepository->systemMessage(
-                \sprintf('An anonymous user has left a comment on collection [url=%s]%s[/url]', $collectionUrl, $collection->name)
+                sprintf('An anonymous user has left a comment on collection [url=%s]%s[/url]', $collectionUrl, $collection->name)
             );
         }
 
         if ($this->taggedUserRepository->hasTags($request->input('content'))) {
             if ($this->taggedUserRepository->contains($request->input('content'), '@here') && $user->group->is_modo) {
-                $users = \collect([]);
+                $users = collect([]);
 
                 $collection->comments()->get()->each(function ($c, $v) use ($users) {
                     $users->push($c->user);
@@ -149,8 +166,8 @@ class CommentController extends Controller
             $user->addProgress(new UserMade900Comments(), 1);
         }
 
-        return \to_route('mediahub.collections.show', ['id' => $collection->id, 'hash' => '#comments'])
-                ->withSuccess(\trans('comment.added'));
+        return to_route('mediahub.collections.show', ['id' => $collection->id, 'hash' => '#comments'])
+                ->withSuccess(trans('comment.added'));
     }
 
     /**
@@ -159,27 +176,27 @@ class CommentController extends Controller
     public function article(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $article = Article::findOrFail($id);
-        $user = $request->user();
+        $user    = $request->user();
 
-        if (RateLimiter::tooManyAttempts('article-comment:'.$user->id, \config('unit3d.comment-rate-limit'))) {
-            return \to_route('articles.show', ['id' => $id])
-                ->withErrors(\trans('comment.slow-down'));
+        if (RateLimiter::tooManyAttempts('article-comment:'.$user->id, config('unit3d.comment-rate-limit'))) {
+            return to_route('articles.show', ['id' => $id])
+                ->withErrors(trans('comment.slow-down'));
         }
 
         RateLimiter::hit('article-comment:'.$user->id);
 
         if ($user->can_comment == 0) {
-            return \to_route('articles.show', ['id' => $article->id])
-                ->withErrors(\trans('comment.rights-revoked'));
+            return to_route('articles.show', ['id' => $article->id])
+                ->withErrors(trans('comment.rights-revoked'));
         }
 
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->anon = $request->input('anonymous');
-        $comment->user_id = $user->id;
+        $comment             = new Comment();
+        $comment->content    = $request->input('content');
+        $comment->anon       = $request->input('anonymous');
+        $comment->user_id    = $user->id;
         $comment->article_id = $article->id;
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'    => 'required',
             'user_id'    => 'required',
             'article_id' => 'required',
@@ -187,27 +204,27 @@ class CommentController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('articles.show', ['id' => $article->id])
+            return to_route('articles.show', ['id' => $article->id])
                 ->withErrors($v->errors());
         }
 
         $comment->save();
-        $articleUrl = \href_article($article);
-        $profileUrl = \href_profile($user);
+        $articleUrl = href_article($article);
+        $profileUrl = href_profile($user);
         // Auto Shout
         if ($comment->anon == 0) {
             $this->chatRepository->systemMessage(
-                \sprintf('[url=%s]%s[/url] has left a comment on article [url=%s]%s[/url]', $profileUrl, $user->username, $articleUrl, $article->title)
+                sprintf('[url=%s]%s[/url] has left a comment on article [url=%s]%s[/url]', $profileUrl, $user->username, $articleUrl, $article->title)
             );
         } else {
             $this->chatRepository->systemMessage(
-                \sprintf('An anonymous user has left a comment on article [url=%s]%s[/url]', $articleUrl, $article->title)
+                sprintf('An anonymous user has left a comment on article [url=%s]%s[/url]', $articleUrl, $article->title)
             );
         }
 
         if ($this->taggedUserRepository->hasTags($request->input('content'))) {
             if ($this->taggedUserRepository->contains($request->input('content'), '@here') && $user->group->is_modo) {
-                $users = \collect([]);
+                $users = collect([]);
 
                 $article->comments()->get()->each(function ($c) use ($users) {
                     $users->push($c->user);
@@ -247,8 +264,8 @@ class CommentController extends Controller
             $user->addProgress(new UserMade900Comments(), 1);
         }
 
-        return \to_route('articles.show', ['id' => $article->id])
-            ->withSuccess(\trans('comment.added'));
+        return to_route('articles.show', ['id' => $article->id])
+            ->withSuccess(trans('comment.added'));
     }
 
     /**
@@ -257,27 +274,27 @@ class CommentController extends Controller
     public function playlist(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $playlist = Playlist::findOrFail($id);
-        $user = $request->user();
+        $user     = $request->user();
 
-        if (RateLimiter::tooManyAttempts('playlist-comment:'.$user->id, \config('unit3d.comment-rate-limit'))) {
-            return \to_route('playlists.show', ['id' => $id])
-                ->withErrors(\trans('comment.slow-down'));
+        if (RateLimiter::tooManyAttempts('playlist-comment:'.$user->id, config('unit3d.comment-rate-limit'))) {
+            return to_route('playlists.show', ['id' => $id])
+                ->withErrors(trans('comment.slow-down'));
         }
 
         RateLimiter::hit('playlist-comment:'.$user->id);
 
         if ($user->can_comment == 0) {
-            return \to_route('playlists.show', ['id' => $playlist->id])
-                ->withErrors(\trans('comment.rights-revoked'));
+            return to_route('playlists.show', ['id' => $playlist->id])
+                ->withErrors(trans('comment.rights-revoked'));
         }
 
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->anon = $request->input('anonymous');
-        $comment->user_id = $user->id;
+        $comment              = new Comment();
+        $comment->content     = $request->input('content');
+        $comment->anon        = $request->input('anonymous');
+        $comment->user_id     = $user->id;
         $comment->playlist_id = $playlist->id;
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'     => 'required',
             'user_id'     => 'required',
             'playlist_id' => 'required',
@@ -285,27 +302,27 @@ class CommentController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('playlists.show', ['id' => $playlist->id])
+            return to_route('playlists.show', ['id' => $playlist->id])
                 ->withErrors($v->errors());
         }
 
         $comment->save();
-        $playlistUrl = \href_playlist($playlist);
-        $profileUrl = \href_profile($user);
+        $playlistUrl = href_playlist($playlist);
+        $profileUrl  = href_profile($user);
         // Auto Shout
         if ($comment->anon == 0) {
             $this->chatRepository->systemMessage(
-                \sprintf('[url=%s]%s[/url] has left a comment on playlist [url=%s]%s[/url]', $profileUrl, $user->username, $playlistUrl, $playlist->name)
+                sprintf('[url=%s]%s[/url] has left a comment on playlist [url=%s]%s[/url]', $profileUrl, $user->username, $playlistUrl, $playlist->name)
             );
         } else {
             $this->chatRepository->systemMessage(
-                \sprintf('An anonymous user has left a comment on playlist [url=%s]%s[/url]', $playlistUrl, $playlist->name)
+                sprintf('An anonymous user has left a comment on playlist [url=%s]%s[/url]', $playlistUrl, $playlist->name)
             );
         }
 
         if ($this->taggedUserRepository->hasTags($request->input('content'))) {
             if ($this->taggedUserRepository->contains($request->input('content'), '@here') && $user->group->is_modo) {
-                $users = \collect([]);
+                $users = collect([]);
 
                 $playlist->comments()->get()->each(function ($c) use ($users) {
                     $users->push($c->user);
@@ -345,8 +362,8 @@ class CommentController extends Controller
             $user->addProgress(new UserMade900Comments(), 1);
         }
 
-        return \to_route('playlists.show', ['id' => $playlist->id, 'hash' => '#comments'])
-            ->withSuccess(\trans('comment.added'));
+        return to_route('playlists.show', ['id' => $playlist->id, 'hash' => '#comments'])
+            ->withSuccess(trans('comment.added'));
     }
 
     /**
@@ -355,27 +372,27 @@ class CommentController extends Controller
     public function torrent(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $torrent = Torrent::findOrFail($id);
-        $user = $request->user();
+        $user    = $request->user();
 
-        if (RateLimiter::tooManyAttempts('torrent-comment:'.$user->id, \config('unit3d.comment-rate-limit'))) {
-            return \to_route('torrent', ['id' => $torrent->id])
-                ->withErrors(\trans('comment.slow-down'));
+        if (RateLimiter::tooManyAttempts('torrent-comment:'.$user->id, config('unit3d.comment-rate-limit'))) {
+            return to_route('torrent', ['id' => $torrent->id])
+                ->withErrors(trans('comment.slow-down'));
         }
 
         RateLimiter::hit('torrent-comment:'.$user->id);
 
         if ($user->can_comment == 0) {
-            return \to_route('torrent', ['id' => $torrent->id])
-                ->withErrors(\trans('comment.rights-revoked'));
+            return to_route('torrent', ['id' => $torrent->id])
+                ->withErrors(trans('comment.rights-revoked'));
         }
 
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->anon = $request->input('anonymous');
-        $comment->user_id = $user->id;
+        $comment             = new Comment();
+        $comment->content    = $request->input('content');
+        $comment->anon       = $request->input('anonymous');
+        $comment->user_id    = $user->id;
         $comment->torrent_id = $torrent->id;
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'    => 'required',
             'user_id'    => 'required',
             'torrent_id' => 'required',
@@ -383,7 +400,7 @@ class CommentController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('torrent', ['id' => $torrent->id])
+            return to_route('torrent', ['id' => $torrent->id])
                 ->withErrors($v->errors());
         }
 
@@ -393,22 +410,22 @@ class CommentController extends Controller
             $torrent->notifyUploader('comment', $comment);
         }
 
-        $torrentUrl = \href_torrent($torrent);
-        $profileUrl = \href_profile($user);
+        $torrentUrl = href_torrent($torrent);
+        $profileUrl = href_profile($user);
         // Auto Shout
         if ($comment->anon == 0) {
             $this->chatRepository->systemMessage(
-                \sprintf('[url=%s]%s[/url] has left a comment on Torrent [url=%s]%s[/url]', $profileUrl, $user->username, $torrentUrl, $torrent->name)
+                sprintf('[url=%s]%s[/url] has left a comment on Torrent [url=%s]%s[/url]', $profileUrl, $user->username, $torrentUrl, $torrent->name)
             );
         } else {
             $this->chatRepository->systemMessage(
-                \sprintf('An anonymous user has left a comment on torrent [url=%s]%s[/url]', $torrentUrl, $torrent->name)
+                sprintf('An anonymous user has left a comment on torrent [url=%s]%s[/url]', $torrentUrl, $torrent->name)
             );
         }
 
         if ($this->taggedUserRepository->hasTags($request->input('content'))) {
             if ($this->taggedUserRepository->contains($request->input('content'), '@here') && $user->group->is_modo) {
-                $users = \collect([]);
+                $users = collect([]);
 
                 $torrent->comments()->get()->each(function ($c) use ($users) {
                     $users->push($c->user);
@@ -448,8 +465,8 @@ class CommentController extends Controller
             $user->addProgress(new UserMade900Comments(), 1);
         }
 
-        return \to_route('torrent', ['id' => $torrent->id, 'hash' => '#comments'])
-            ->withSuccess(\trans('comment.added'));
+        return to_route('torrent', ['id' => $torrent->id, 'hash' => '#comments'])
+            ->withSuccess(trans('comment.added'));
     }
 
     /**
@@ -457,28 +474,28 @@ class CommentController extends Controller
      */
     public function request(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
-        $tr = TorrentRequest::findOrFail($id);
+        $tr   = TorrentRequest::findOrFail($id);
         $user = $request->user();
 
-        if (RateLimiter::tooManyAttempts('request-comment:'.$user->id, \config('unit3d.comment-rate-limit'))) {
-            return \to_route('request', ['id' => $id])
-                ->withErrors(\trans('comment.slow-down'));
+        if (RateLimiter::tooManyAttempts('request-comment:'.$user->id, config('unit3d.comment-rate-limit'))) {
+            return to_route('request', ['id' => $id])
+                ->withErrors(trans('comment.slow-down'));
         }
 
         RateLimiter::hit('request-comment:'.$user->id);
 
         if ($user->can_comment == 0) {
-            return \to_route('request', ['id' => $tr->id])
-                ->withErrors(\trans('comment.rights-revoked'));
+            return to_route('request', ['id' => $tr->id])
+                ->withErrors(trans('comment.rights-revoked'));
         }
 
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->anon = $request->input('anonymous');
-        $comment->user_id = $user->id;
+        $comment              = new Comment();
+        $comment->content     = $request->input('content');
+        $comment->anon        = $request->input('anonymous');
+        $comment->user_id     = $user->id;
         $comment->requests_id = $tr->id;
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'     => 'required',
             'user_id'     => 'required',
             'requests_id' => 'required',
@@ -486,21 +503,21 @@ class CommentController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('request', ['id' => $tr->id])
+            return to_route('request', ['id' => $tr->id])
                 ->withErrors($v->errors());
         }
 
         $comment->save();
-        $trUrl = \href_request($tr);
-        $profileUrl = \href_profile($user);
+        $trUrl      = href_request($tr);
+        $profileUrl = href_profile($user);
         // Auto Shout
         if ($comment->anon == 0) {
             $this->chatRepository->systemMessage(
-                \sprintf('[url=%s]%s[/url] has left a comment on Request [url=%s]%s[/url]', $profileUrl, $user->username, $trUrl, $tr->name)
+                sprintf('[url=%s]%s[/url] has left a comment on Request [url=%s]%s[/url]', $profileUrl, $user->username, $trUrl, $tr->name)
             );
         } else {
             $this->chatRepository->systemMessage(
-                \sprintf('An anonymous user has left a comment on Request [url=%s]%s[/url]', $trUrl, $tr->name)
+                sprintf('An anonymous user has left a comment on Request [url=%s]%s[/url]', $trUrl, $tr->name)
             );
         }
 
@@ -511,7 +528,7 @@ class CommentController extends Controller
 
         if ($this->taggedUserRepository->hasTags($request->input('content'))) {
             if ($this->taggedUserRepository->contains($request->input('content'), '@here') && $user->group->is_modo) {
-                $users = \collect([]);
+                $users = collect([]);
 
                 $tr->comments()->get()->each(function ($c) use ($users) {
                     $users->push($c->user);
@@ -551,8 +568,8 @@ class CommentController extends Controller
             $user->addProgress(new UserMade900Comments(), 1);
         }
 
-        return \to_route('request', ['id' => $tr->id, 'hash' => '#comments'])
-            ->withSuccess(\trans('comment.added'));
+        return to_route('request', ['id' => $tr->id, 'hash' => '#comments'])
+            ->withSuccess(trans('comment.added'));
     }
 
     /**
@@ -561,22 +578,22 @@ class CommentController extends Controller
     public function ticket(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $ticket = Ticket::findOrFail($id);
-        $user = $request->user();
+        $user   = $request->user();
 
-        if (RateLimiter::tooManyAttempts('ticket-comment:'.$user->id, \config('unit3d.comment-rate-limit'))) {
-            return \to_route('tickets.show', ['id' => $id])
-                ->withErrors(\trans('comment.slow-down'));
+        if (RateLimiter::tooManyAttempts('ticket-comment:'.$user->id, config('unit3d.comment-rate-limit'))) {
+            return to_route('tickets.show', ['id' => $id])
+                ->withErrors(trans('comment.slow-down'));
         }
 
         RateLimiter::hit('ticket-comment:'.$user->id);
 
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->anon = 0;
-        $comment->user_id = $user->id;
+        $comment            = new Comment();
+        $comment->content   = $request->input('content');
+        $comment->anon      = 0;
+        $comment->user_id   = $user->id;
         $comment->ticket_id = $ticket->id;
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'   => 'required',
             'user_id'   => 'required',
             'ticket_id' => 'required',
@@ -584,7 +601,7 @@ class CommentController extends Controller
         ]);
 
         if ($v->fails()) {
-            return \to_route('tickets.show', ['id' => $id])
+            return to_route('tickets.show', ['id' => $id])
                 ->withErrors($v->errors());
         }
 
@@ -599,8 +616,8 @@ class CommentController extends Controller
         $comment->save();
         $ticket->save();
 
-        return \to_route('tickets.show', ['id' => $ticket->id])
-            ->withSuccess(\trans('comment.added'));
+        return to_route('tickets.show', ['id' => $ticket->id])
+            ->withSuccess(trans('comment.added'));
     }
 
     /**
@@ -609,18 +626,18 @@ class CommentController extends Controller
     public function quickthanks(Request $request, int $id): \Illuminate\Http\RedirectResponse
     {
         $torrent = Torrent::findOrFail($id);
-        $user = $request->user();
+        $user    = $request->user();
 
-        if (RateLimiter::tooManyAttempts('torrent-comment:'.$user->id, \config('unit3d.comment-rate-limit'))) {
-            return \to_route('torrent', ['id' => $torrent->id])
-                ->withErrors(\trans('comment.slow-down'));
+        if (RateLimiter::tooManyAttempts('torrent-comment:'.$user->id, config('unit3d.comment-rate-limit'))) {
+            return to_route('torrent', ['id' => $torrent->id])
+                ->withErrors(trans('comment.slow-down'));
         }
 
         RateLimiter::hit('torrent-comment:'.$user->id);
 
         if ($user->can_comment == 0) {
-            return \to_route('torrent', ['id' => $torrent->id])
-                ->withErrors(\trans('comment.rights-revoked'));
+            return to_route('torrent', ['id' => $torrent->id])
+                ->withErrors(trans('comment.rights-revoked'));
         }
 
         $comment = new Comment();
@@ -632,29 +649,29 @@ class CommentController extends Controller
                 'Great upload! :fire:', 'Thank you :smiley:',
             ];
         } else {
-            $uploader = User::where('id', '=', $torrent->user_id)->first();
-            $uploaderUrl = \href_profile($uploader);
+            $uploader    = User::where('id', '=', $torrent->user_id)->first();
+            $uploaderUrl = href_profile($uploader);
 
             $thankArray = [
-                \sprintf('Thanks for the upload [url=%s][color=%s][b]%s[/b][/color][/url] :vulcan_tone2:', $uploaderUrl, $uploader->group->color, $uploader->username),
-                \sprintf('Beautiful upload [url=%s][color=%s][b]%s[/b][/color][/url] :fire:', $uploaderUrl, $uploader->group->color, $uploader->username),
-                \sprintf('Cheers [url=%s][color=%s][b]%s[/b][/color][/url] for the upload :beers:', $uploaderUrl, $uploader->group->color, $uploader->username),
+                sprintf('Thanks for the upload [url=%s][color=%s][b]%s[/b][/color][/url] :vulcan_tone2:', $uploaderUrl, $uploader->group->color, $uploader->username),
+                sprintf('Beautiful upload [url=%s][color=%s][b]%s[/b][/color][/url] :fire:', $uploaderUrl, $uploader->group->color, $uploader->username),
+                sprintf('Cheers [url=%s][color=%s][b]%s[/b][/color][/url] for the upload :beers:', $uploaderUrl, $uploader->group->color, $uploader->username),
             ];
         }
 
-        $selected = random_int(0, (\is_countable($thankArray) ? \count($thankArray) : 0) - 1);
-        $comment->content = $thankArray[$selected];
-        $comment->user_id = $user->id;
+        $selected            = random_int(0, (is_countable($thankArray) ? count($thankArray) : 0) - 1);
+        $comment->content    = $thankArray[$selected];
+        $comment->user_id    = $user->id;
         $comment->torrent_id = $torrent->id;
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'    => 'required',
             'user_id'    => 'required',
             'torrent_id' => 'required',
         ]);
 
         if ($v->fails()) {
-            return \to_route('torrent', ['id' => $torrent->id])
+            return to_route('torrent', ['id' => $torrent->id])
                 ->withErrors($v->errors());
         }
 
@@ -682,14 +699,14 @@ class CommentController extends Controller
         }
 
         // Auto Shout
-        $torrentUrl = \href_torrent($torrent);
-        $profileUrl = \href_profile($user);
+        $torrentUrl = href_torrent($torrent);
+        $profileUrl = href_profile($user);
         $this->chatRepository->systemMessage(
-            \sprintf('[url=%s]%s[/url] has left a comment on Torrent [url=%s]%s[/url]', $profileUrl, $user->username, $torrentUrl, $torrent->name)
+            sprintf('[url=%s]%s[/url] has left a comment on Torrent [url=%s]%s[/url]', $profileUrl, $user->username, $torrentUrl, $torrent->name)
         );
 
-        return \to_route('torrent', ['id' => $torrent->id])
-            ->withSuccess(\trans('comment.added'));
+        return to_route('torrent', ['id' => $torrent->id])
+            ->withSuccess(trans('comment.added'));
     }
 
     /**
@@ -697,24 +714,24 @@ class CommentController extends Controller
      */
     public function editComment(Request $request, int $commentId): \Illuminate\Http\RedirectResponse
     {
-        $user = $request->user();
+        $user    = $request->user();
         $comment = Comment::findOrFail($commentId);
 
-        \abort_unless($user->group->is_modo || $user->id == $comment->user_id, 403);
+        abort_unless($user->group->is_modo || $user->id == $comment->user_id, 403);
         $comment->content = $request->input('comment-edit');
 
-        $v = \validator($comment->toArray(), [
+        $v = validator($comment->toArray(), [
             'content'    => 'required',
         ]);
 
         if ($v->fails()) {
-            return \redirect()->back()
+            return redirect()->back()
                 ->withErrors($v->errors());
         }
 
         $comment->save();
 
-        return \redirect()->back()->withSuccess(\trans('comment.edited'));
+        return redirect()->back()->withSuccess(trans('comment.edited'));
     }
 
     /**
@@ -722,12 +739,12 @@ class CommentController extends Controller
      */
     public function deleteComment(Request $request, int $commentId): \Illuminate\Http\RedirectResponse
     {
-        $user = $request->user();
+        $user    = $request->user();
         $comment = Comment::findOrFail($commentId);
 
-        \abort_unless($user->group->is_modo || $user->id == $comment->user_id, 403);
+        abort_unless($user->group->is_modo || $user->id == $comment->user_id, 403);
         $comment->delete();
 
-        return \redirect()->back()->withSuccess(\trans('comment.deleted'));
+        return redirect()->back()->withSuccess(trans('comment.deleted'));
     }
 }

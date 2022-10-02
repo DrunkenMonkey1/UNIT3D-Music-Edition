@@ -16,6 +16,8 @@ namespace App\Http\Controllers;
 use App\Models\History;
 use App\Models\Torrent;
 
+use function view;
+
 class TorrentHistoryController extends Controller
 {
     /**
@@ -26,6 +28,6 @@ class TorrentHistoryController extends Controller
         $torrent = Torrent::withAnyStatus()->findOrFail($id);
         $history = History::with(['user'])->where('torrent_id', '=', $id)->latest()->get();
 
-        return \view('torrent.history', ['torrent' => $torrent, 'history' => $history]);
+        return view('torrent.history', ['torrent' => $torrent, 'history' => $history]);
     }
 }

@@ -37,8 +37,8 @@ class NoteControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $staff = $this->createStaffUser();
-        $note = Note::factory()->create();
-        $user = User::whereId($note->user_id)->first();
+        $note  = Note::factory()->create();
+        $user  = User::whereId($note->user_id)->first();
 
         $response = $this->actingAs($staff)->delete(route('staff.notes.destroy', ['id' => $note->id]));
 
@@ -69,8 +69,8 @@ class NoteControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $staff = $this->createStaffUser();
-        $user = User::factory()->create();
-        $note = Note::factory()->make();
+        $user  = User::factory()->create();
+        $note  = Note::factory()->make();
 
         $response = $this->actingAs($staff)->post(route('staff.notes.store', ['username' => $user->username]), [
             'user_id'  => $user->id,

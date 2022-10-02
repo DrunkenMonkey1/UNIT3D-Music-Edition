@@ -17,6 +17,8 @@ use App\Models\Company;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function view;
+
 class CompanySearch extends Component
 {
     use WithPagination;
@@ -48,7 +50,7 @@ class CompanySearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.company-search', [
+        return view('livewire.company-search', [
             'companies' => $this->companies,
         ]);
     }

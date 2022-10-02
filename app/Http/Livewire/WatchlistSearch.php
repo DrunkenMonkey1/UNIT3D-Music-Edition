@@ -17,6 +17,9 @@ use App\Models\Watchlist;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use function auth;
+use function view;
+
 class WatchlistSearch extends Component
 {
     use WithPagination;
@@ -33,7 +36,7 @@ class WatchlistSearch extends Component
 
     final public function mount(): void
     {
-        $this->user = \auth()->user();
+        $this->user = auth()->user();
     }
 
     final public function paginationView(): string
@@ -73,7 +76,7 @@ class WatchlistSearch extends Component
 
     final public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return \view('livewire.watchlist-search', [
+        return view('livewire.watchlist-search', [
             'watchedUsers' => $this->users,
         ]);
     }

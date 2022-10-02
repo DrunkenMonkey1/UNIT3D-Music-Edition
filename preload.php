@@ -14,8 +14,8 @@ class Preloader
 
     public function __construct(string ...$paths)
     {
-        $this->paths = $paths;
-        $classMap = require __DIR__.'/vendor/composer/autoload_classmap.php';
+        $this->paths   = $paths;
+        $classMap      = require __DIR__.'/vendor/composer/autoload_classmap.php';
         $this->fileMap = \array_flip($classMap);
     }
 
@@ -66,7 +66,7 @@ class Preloader
         $handle = \opendir($path);
 
         while ($file = \readdir($handle)) {
-            if (\in_array($file, ['.', '..'])) {
+            if (\in_array($file, ['.', '..'], true)) {
                 continue;
             }
 

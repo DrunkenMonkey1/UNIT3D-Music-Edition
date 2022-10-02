@@ -51,7 +51,7 @@ class GiftControllerTest extends TestCase
         $this->seed(GroupsTableSeeder::class);
 
         $staff = $this->createStaffUser();
-        $user = User::factory()->create();
+        $user  = User::factory()->create();
 
         $response = $this->actingAs($staff)->post(route('staff.gifts.store'), [
             'username'  => $user->username,
