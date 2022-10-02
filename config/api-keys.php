@@ -15,24 +15,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | TheMovieDB (Movies/TV)
+    | Discogs API Token
     |--------------------------------------------------------------------------
     |
-    | TMDB API Key
+    | The API token is required for discogs to work properly.
     |
     */
 
-    'tmdb' => env('TMDB_API_KEY', ''),
+    'discogs' => env('DISCOGS_API_TOKEN', ''),
+
 
     /*
-    |--------------------------------------------------------------------------
-    | OpenMovieDatabase (Movies/TV)
-    |--------------------------------------------------------------------------
-    |
-    | OMDB API Key
-    |
-    */
+   |--------------------------------------------------------------------------
+   | Discogs app name
+   |--------------------------------------------------------------------------
+   |
+   | The app name is required for discogs to work properly.
+   |
+   */
 
-    'omdb' => env('OMDB_API_KEY', ''),
+    'app-name' => env('DISCOGS_APP_NAME', ''),
+
+
 
 ];
