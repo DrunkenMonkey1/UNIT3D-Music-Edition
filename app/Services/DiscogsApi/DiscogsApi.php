@@ -17,7 +17,6 @@ class DiscogsApi
 
     public function __construct(protected Client $client, protected ?string $token = null, protected ?string $userAgent = null)
     {
-
     }
 
     /**
@@ -180,10 +179,10 @@ class DiscogsApi
     public function getMyOrders(int $page = null, int $perPage = null, string $status = null, string $sort = null, string $sortOrder = null): mixed
     {
         $query = [
-            'page' => $page ?? 1,
-            'per_page' => $perPage ?? 50,
-            'status' => $status ?? 'All',
-            'sort' => $sort ?? 'id',
+            'page'       => $page      ?? 1,
+            'per_page'   => $perPage   ?? 50,
+            'status'     => $status    ?? 'All',
+            'sort'       => $sort      ?? 'id',
             'sort_order' => $sortOrder ?? 'desc',
         ];
 
@@ -292,9 +291,10 @@ class DiscogsApi
         $resource = 'marketplace/orders/';
 
         return $this->client
-            ->post($this->url($this->path($resource, $orderId)),
+            ->post(
+                $this->url($this->path($resource, $orderId)),
                 ['query' => [
-                    $key => $value,
+                    $key    => $value,
                     'token' => $this->token(),
                 ],
                 ]
@@ -330,9 +330,9 @@ class DiscogsApi
         }
 
         return [
-            'stream' => true,
+            'stream'  => true,
             'headers' => ['User-Agent' => $this->userAgent ?: null],
-            'query' => $query,
+            'query'   => $query,
         ];
     }
 

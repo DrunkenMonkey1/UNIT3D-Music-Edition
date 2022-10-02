@@ -273,10 +273,10 @@ class AnnounceController extends Controller
 
         \throw_if(! is_numeric($queries['port']) || $queries['port'] < 0 || $queries['port'] > 0xFFFF
                                                  || in_array(
-                $queries['port'],
-                self::BLACK_PORTS,
-                true
-            ), new TrackerException(135, [':port' => $queries['port']]));
+                                                     $queries['port'],
+                                                     self::BLACK_PORTS,
+                                                     true
+                                                 ), new TrackerException(135, [':port' => $queries['port']]));
 
         // Part.4 Get User Ip Address
         $queries['ip-address'] = $request->getClientIp();

@@ -51,8 +51,8 @@ class BonExchangeController extends Controller
         $bonExchange->value              = $request->value;
         $bonExchange->cost               = $request->cost;
         $bonExchange->upload             = $request->type             === 'upload';
-        $bonExchange->download           = $request->type           === 'download';
-        $bonExchange->personal_freeleech = $request->type === 'personal_freeleech';
+        $bonExchange->download           = $request->type             === 'download';
+        $bonExchange->personal_freeleech = $request->type             === 'personal_freeleech';
         $bonExchange->invite             = $request->type             === 'invite';
 
         $v = validator($bonExchange->toArray(), [
@@ -96,8 +96,8 @@ class BonExchangeController extends Controller
         $bonExchange->value              = $request->value;
         $bonExchange->cost               = $request->cost;
         $bonExchange->upload             = $request->type             === 'upload';
-        $bonExchange->download           = $request->type           === 'download';
-        $bonExchange->personal_freeleech = $request->type === 'personal_freeleech';
+        $bonExchange->download           = $request->type             === 'download';
+        $bonExchange->personal_freeleech = $request->type             === 'personal_freeleech';
         $bonExchange->invite             = $request->type             === 'invite';
 
         $v = validator($bonExchange->toArray(), [
