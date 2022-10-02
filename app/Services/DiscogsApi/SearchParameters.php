@@ -11,7 +11,6 @@ use Illuminate\Support\Collection;
  */
 class SearchParameters
 {
-
     protected string $type;
 
     protected string $title;
@@ -36,18 +35,16 @@ class SearchParameters
     public function get(): Collection
     {
         $fields = [
-            'type' => $this->type,
-            'title' => $this->title,
-            'label' => $this->label,
-            'genre' => $this->genre,
-            'year' => $this->year,
+            'type'   => $this->type,
+            'title'  => $this->title,
+            'label'  => $this->label,
+            'genre'  => $this->genre,
+            'year'   => $this->year,
             'format' => $this->format,
-            'catno' => $this->catno,
+            'catno'  => $this->catno,
         ];
 
-        return collect($fields)->reject(function ($value) {
-            return is_null($value);
-        });
+        return collect($fields)->reject(fn ($value) => is_null($value));
     }
 
     /**
