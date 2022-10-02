@@ -1,0 +1,33 @@
+{
+  "preset": "psr12",
+  "rules": {
+    "binary_operator_spaces": {
+      "operators": {
+        "=": "align_single_space",
+        "=>": "align_single_space"
+      },
+      "default": "align_single_space"
+    },
+    "strict_param": true,
+    "strict_comparison": false,
+    "use_arrow_functions": true,
+    "assign_null_coalescing_to_coalesce_equal": true,
+    "combine_consecutive_issets": true,
+    "global_namespace_import": {
+      "import_classes": false,
+      "import_constants": false,
+      "import_functions": true
+    },
+    "fully_qualified_strict_types": true,
+    "single_import_per_statement": false,
+    "no_useless_else": true
+  },
+  "exclude": [
+    "vendor",
+    "public",
+    "node_modules",
+    "bootstrap",
+    "preload.php",
+    "database/migrations"
+  ]
+}
