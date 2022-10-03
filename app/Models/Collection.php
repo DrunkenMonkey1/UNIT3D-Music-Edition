@@ -30,5 +30,4 @@ class Collection extends Model
     {
         return $this->hasMany(Comment::class, 'collection_id');
     }
-
 }

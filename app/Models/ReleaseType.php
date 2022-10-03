@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReleaseType extends Model
 {
+    use HasFactory;
+    use Auditable;
     protected $table = 'release_types';
-
-    use HasFactory, Auditable;
 
     /**
      * Has Many Torrents.

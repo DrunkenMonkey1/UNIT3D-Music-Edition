@@ -22,6 +22,4 @@ class Person extends Model
     public $timestamps = false;
 
     public $table = 'person';
-
-
 }

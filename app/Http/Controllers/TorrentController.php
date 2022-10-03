@@ -38,7 +38,6 @@ use App\Models\Source;
 use App\Models\Torrent;
 use App\Models\TorrentFile;
 use App\Models\TorrentRequest;
-use App\Models\Type;
 use App\Models\Warning;
 use App\Repositories\ChatRepository;
 use hdvinnie\LaravelJoyPixels\LaravelJoyPixels;
@@ -304,14 +303,14 @@ class TorrentController extends Controller
         }
 
         return view('torrent.upload', [
-            'categories'   => $categories,
+            'categories'    => $categories,
             'sources'       => Source::all()->sortBy('position'),
             'formats'       => Format::all()->sortBy('position'),
             'releaseTypes'  => ReleaseType::all()->sortBy('position'),
             'bitrates'      => Bitrate::all()->sortBy('position'),
-            'user'         => $user,
-            'category_id'  => $categoryId,
-            'title'        => $title,
+            'user'          => $user,
+            'category_id'   => $categoryId,
+            'title'         => $title,
         ]);
     }
 
@@ -410,22 +409,22 @@ class TorrentController extends Controller
 
         // Validation
         $v = validator($torrent->toArray(), [
-            'name'           => 'required|unique:torrents',
-            'slug'           => 'required',
-            'description'    => 'required',
-            'info_hash'      => 'required|unique:torrents',
-            'file_name'      => 'required',
-            'num_file'       => 'required|numeric',
-            'announce'       => 'required',
-            'size'           => 'required',
-            'category_id'    => 'required|exists:categories,id',
-            'source_id'    => 'required|exists:sources,id',
-            'format_id'    => 'required|exists:formats,id',
+            'name'              => 'required|unique:torrents',
+            'slug'              => 'required',
+            'description'       => 'required',
+            'info_hash'         => 'required|unique:torrents',
+            'file_name'         => 'required',
+            'num_file'          => 'required|numeric',
+            'announce'          => 'required',
+            'size'              => 'required',
+            'category_id'       => 'required|exists:categories,id',
+            'source_id'         => 'required|exists:sources,id',
+            'format_id'         => 'required|exists:formats,id',
             'release_type_id'   => 'required|exists:release_types,id',
-            'bitrate_id'    => 'required|exists:bitrates,id',
-            'anon'           => 'required',
-            'stream'         => 'required',
-            'free'           => 'sometimes|between:0,100',
+            'bitrate_id'        => 'required|exists:bitrates,id',
+            'anon'              => 'required',
+            'stream'            => 'required',
+            'free'              => 'sometimes|between:0,100',
         ]);
 
         if ($v->fails()) {
