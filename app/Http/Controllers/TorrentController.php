@@ -101,10 +101,6 @@ class TorrentController extends Controller
         $lastSeedActivity  = History::where('torrent_id', '=', $torrent->id)->where('seeder', '=', 1)->latest('updated_at')->first();
         $audits            = Audit::with('user')->where('model_entry_id', '=', $torrent->id)->where('model_name', '=', 'Torrent')->latest()->get();
 
-        $meta      = null;
-        $trailer   = null;
-        $platforms = null;
-
         $featured = $torrent->featured == 1 ? FeaturedTorrent::where('torrent_id', '=', $id)->first() : null;
 
         $playlists = $user->playlists;
@@ -115,8 +111,6 @@ class TorrentController extends Controller
             'user'               => $user,
             'personal_freeleech' => $personalFreeleech,
             'freeleech_token'    => $freeleechToken,
-            'trailer'            => $trailer,
-            'platforms'          => $platforms,
             'total_tips'         => $totalTips,
             'user_tips'          => $userTips,
             'featured'           => $featured,

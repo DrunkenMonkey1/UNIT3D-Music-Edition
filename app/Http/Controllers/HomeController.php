@@ -24,6 +24,7 @@ use App\Models\Post;
 use App\Models\Topic;
 use App\Models\Torrent;
 use App\Models\User;
+use App\Services\JioSaavnApi\JioSaavnApi;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -46,6 +47,7 @@ class HomeController extends Controller
     public function index(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         // For Cache
+        dd((new JioSaavnApi())->getSongsDetails('SYZThIim'));
         $current   = Carbon::now();
         $expiresAt = $current->addMinutes(1);
 
