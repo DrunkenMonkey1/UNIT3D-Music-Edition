@@ -24,8 +24,7 @@ class JioSaavnApi
     /**
      * @param string $query
      *
-     * @return string {Json}
-     *
+     * @return \Illuminate\Support\Collection
      */
     public function search(string $query)
     {
