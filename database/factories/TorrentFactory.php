@@ -9,7 +9,6 @@ use App\Models\Category;
 use App\Models\Format;
 use App\Models\ReleaseType;
 use App\Models\Source;
-use App\Models\Type;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -42,10 +41,10 @@ class TorrentFactory extends Factory
             'category_id'        => fn () => Category::factory()->create()->id,
             'announce'           => $this->faker->word(),
             'user_id'            => fn () => User::factory()->create()->id,
-            'source_id'          => fn() => Source::factory()->create()->id,
-            'format_id'          => fn() => Format::factory()->create()->id,
-            'release_type_id'    => fn() => ReleaseType::factory()->create()->id,
-            'bitrate_id'         => fn() => Bitrate::factory()->create()->id,
+            'source_id'          => fn () => Source::factory()->create()->id,
+            'format_id'          => fn () => Format::factory()->create()->id,
+            'release_type_id'    => fn () => ReleaseType::factory()->create()->id,
+            'bitrate_id'         => fn () => Bitrate::factory()->create()->id,
             'stream'             => $this->faker->boolean(),
             'free'               => $freeleech[$selected],
             'doubleup'           => $this->faker->boolean(),

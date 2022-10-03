@@ -6,11 +6,12 @@ declare(strict_types=1);
 namespace App\Services\JioSaavnApi;
 
 use Illuminate\Support\Facades\Http;
+
 use function collect;
 
 class JioSaavnApi
 {
-   private const SEARCH_BASE_URL = 'https://www.jiosaavn.com/api.php?__call=autocomplete.get&_format=json&_marker=0&cc=in&includeMetaTags=1&query=';
+    private const SEARCH_BASE_URL = 'https://www.jiosaavn.com/api.php?__call=autocomplete.get&_format=json&_marker=0&cc=in&includeMetaTags=1&query=';
 
     private const SONG_DETAILS_BASE_URL = 'https://www.jiosaavn.com/api.php?__call=song.getDetails&cc=in&_marker=0%3F_marker%3D0&_format=json&pids=';
 
@@ -29,7 +30,7 @@ class JioSaavnApi
     public function search(string $query)
     {
         return $this->get(self::SEARCH_BASE_URL . $query)
-            ->map(fn($item) => $item['data']);
+            ->map(fn ($item) => $item['data']);
     }
 
     /**
@@ -40,7 +41,6 @@ class JioSaavnApi
     public function getAlbumDetails(string $id): \Illuminate\Support\Collection
     {
         return $this->get(self::ALBUM_DETAILS_BASE_URL . $id);
-
     }
 
     /**
@@ -66,5 +66,4 @@ class JioSaavnApi
             ? $request->collect()
             : collect([]);
     }
-
 }
