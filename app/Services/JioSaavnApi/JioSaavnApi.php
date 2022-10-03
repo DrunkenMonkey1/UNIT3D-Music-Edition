@@ -12,7 +12,7 @@ use function collect;
 class JioSaavnApi
 {
     private const API_BASE_URL    =   'https://www.jiosaavn.com/api.php?__call=';
-    private const SEARCH_PARAMS = 'autocomplete.get&_format=json&_marker=0&cc=in&includeMetaTags=1&query=';
+    private const SEARCH_PARAMS   = 'autocomplete.get&_format=json&_marker=0&cc=in&includeMetaTags=1&query=';
 
     private const SONG_DETAILS_PARAMS = 'song.getDetails&cc=in&_marker=0%3F_marker%3D0&_format=json&pids=';
 
