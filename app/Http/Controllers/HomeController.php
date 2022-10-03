@@ -47,7 +47,6 @@ class HomeController extends Controller
     public function index(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\View\View
     {
         // For Cache
-        dd((new JioSaavnApi())->getSongsDetails('SYZThIim'));
         $current   = Carbon::now();
         $expiresAt = $current->addMinutes(1);
 
